@@ -124,7 +124,6 @@ const equations = [
     "9x + 2 = 6x + 11", "10x - 4 = 7x + 8", "2x + 7 = x + 12", "4x + 1 = 2x + 9",
     "5x - 3 = 3x + 5", "6x + 4 = 4x + 10", "8x - 1 = 5x + 11", "9x + 3 = 6x + 15",
     "x / 2 = 5", "x / 3 + 4 = 7", "x / 4 - 2 = 3", "x / 5 + 1 = 6", "x / 6 = 2",
-    "0 = 4x - 24", "0 = 2x - 6", "- 4x + 8 = 0", "3x - 9 = 0", "0 = 5x - 20",
     "x / 7 - 3 = 1", "x / 8 + 5 = 9", "x / 9 = 4", "x / 10 - 1 = 2", "x / 2 + 3 = 8"
 ];
 
@@ -181,31 +180,44 @@ function checkIfSolved(left, right) {
     }
 }
 
+  const noFactorRules = math.simplify.rules.filter(rule => rule.name !== 'factor');
+
 function applyOperation(left, right, operation) {
     try {
-        if (operation.includes('/') || operation.includes('*')) {
-            left = `(${left})`;
-            right = `(${right})`;
-        }
+        // Create a set of simplification rules that do NOT include the factoring rule
+        const noFactorRules = math.simplify.rules.filter(rule => rule.name !== 'factor');
 
-        left = math.simplify(`${left} ${operation}`).toString();
-        right = math.simplify(`${right} ${operation}`).toString();
+        // Apply the operation to both sides, ensuring explicit addition/subtraction formatting
+        left = math.simplify(`(${left}) ${operation}`, noFactorRules).toString();
+        right = math.simplify(`(${right}) ${operation}`, noFactorRules).toString();
 
+        // Prevent unexpected factorization by ensuring terms are properly combined
+        left = math.simplify(left, { exactFractions: true }).toString();
+        right = math.simplify(right, { exactFractions: true }).toString();
+
+        // Format the equations to remove unnecessary multiplication symbols and spaces
         left = formatEquation(left);
         right = formatEquation(right);
 
+        // Ensure subtraction does NOT turn into unexpected factored expressions
+        left = left.replace(/\*\s*\(/g, "(");
+        right = right.replace(/\*\s*\(/g, "(");
+
+        // Remove redundant parentheses if they exist
         left = left.replace(/^\((.*)\)$/, '$1');
         right = right.replace(/^\((.*)\)$/, '$1');
+
+        // Check if the equation is solved after applying the operation
+        checkIfSolved(left, right);
+
     } catch (error) {
-        alert("Felaktig inmatning. Gör en matematisk uträkning på båda sidor (t.ex +5)");
+        alert("Felaktig inmatning. Gör en matematisk uträkning på båda sidor (t.ex. +2)");
         return [left, right];
     }
 
-    // Check if the equation is solved after applying the operation
-    checkIfSolved(left, right);
-
     return [left, right];
 }
+
 
 function logOperation(operation, left, right) {
     const logEntry = document.createElement("div");
@@ -260,7 +272,7 @@ operationText.style.marginBottom = "10px";
     // Create a div for the new equation
     const newEquationText = document.createElement("div");
     newEquationText.textContent = `${equation}`;
-    // newEquationText.style.fontWeight = "bold"; // Make it stand out
+    newEquationText.style.fontWeight = "bold"; // Make it stand out
     newEquationText.style.fontSize = "16px"; // Slightly larger font
     newEquationText.style.marginBottom = "0px"; // Add some spacing below
 

@@ -196,7 +196,7 @@ function applyOperation(left, right, operation) {
         left = left.replace(/^\((.*)\)$/, '$1');
         right = right.replace(/^\((.*)\)$/, '$1');
     } catch (error) {
-        alert("Felaktig inmatning. Gör en matematisk uträkning på båda sidor (t.ex +2)");
+        alert("Felaktig inmatning. Gör en matematisk uträkning på båda sidor (t.ex +5)");
         return [left, right];
     }
 
@@ -215,7 +215,7 @@ function logOperation(operation, left, right) {
 
     // Determine the color based on the operation
     if (operation.includes("+") || operation.includes("*")) {
-        operationText.style.color = "green"; // Green for addition and multiplication
+        operationText.style.color = "lightgreen"; // Green for addition and multiplication
     } else if (operation.includes("-") || operation.includes("/")) {
         operationText.style.color = "red"; // Red for subtraction and division
     }

@@ -40,8 +40,8 @@
         #input-operation { width: 100%; font-size: 18px; padding: 5px; margin-bottom: 10px; text-align: right; }
         .gobutton { display: grid; grid-template-columns: repeat(1, 1fr); width: 220px; padding: 15px; }
         .log-container { position: fixed; bottom: 20px; right: 20px; width: 220px; background-color: rgba(0, 0, 0, 0.3); padding: 5px; border: 1px solid white; overflow-y: auto; max-height: 100%; }
-        .log-title { font-size: 16px; font-weight: bold; margin-bottom: 0px; }
-        .log-entry { font-size: 14px; margin-bottom: 0px; }
+        .log-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .log-entry { font-size: 16px; margin-bottom: 0px; margin-top: 0px;}
     </style>
 	
 	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.2.0"></script>
@@ -221,12 +221,13 @@ function logOperation(operation, left, right) {
     }
 
   //  operationText.textContent = `${operation}        ${operation}`;
-operationText.innerHTML = `${operation}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${operation}`;
+operationText.innerHTML = `${operation}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${operation}`;
+operationText.style.marginBottom = "10px"; 
 
     // Create a div for the resulting equation (on a new row)
     const equationText = document.createElement("div");
     equationText.textContent = `${left} = ${right}`;
-    // equationText.style.marginTop = "5px"; // Add some spacing between the rows
+    // equationText.style.marginTop = "0px"; // Add some spacing between the rows
 
     // Append the elements to the log entry
     logEntry.appendChild(operationText);
@@ -259,8 +260,8 @@ operationText.innerHTML = `${operation}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
     const newEquationText = document.createElement("div");
     newEquationText.textContent = `${equation}`;
     newEquationText.style.fontWeight = "bold"; // Make it stand out
-    newEquationText.style.fontSize = "12px"; // Slightly larger font
-    newEquationText.style.marginBottom = "10px"; // Add some spacing below
+    newEquationText.style.fontSize = "16px"; // Slightly larger font
+    newEquationText.style.marginBottom = "0px"; // Add some spacing below
 
     // Append the new equation to the log entry
     logEntry.appendChild(newEquationText);

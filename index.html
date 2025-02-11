@@ -6,8 +6,8 @@
     <title>Tommies Ekvationsträning</title>
     <style>
         body { font-family: Consolas,monaco,monospace; text-align: center; background-color: black; color: white; }
-        #reset-button { font-family: Consolas,monaco,monospace; font-size:20px; background-color: #04AA6D; border: 2px solid black; padding: 6px; cursor: pointer; }
-		#reset-button:hover { color: white; border: 2px solid white;}
+        #reset-button { font-family: Consolas,monaco,monospace; font-size:16px; width: 220px; background-color: #04AA6D; letter-spacing: 3px; color: white; border: 2px solid white; padding: 6px; cursor: pointer; }
+		#reset-button:hover {border: 2px solid black; color: black; }
 		.container { width: 100%; margin: auto; position: relative; }
         .equation-container { display: flex; justify-content: center; align-items: center; position: relative;  }
         .operation { position: absolute; font-size: 20px; font-weight: bold; margin-bottom:1px; margin-top: 1px; padding: 1px; }
@@ -51,7 +51,7 @@
     <div class="container">
         <h1>Ekvationsträning</h1>
 
-        <button class="reset" id="reset-button">&nbspGe mig en ny ekvation&nbsp</button>
+        <button class="reset" id="reset-button">NY EKVATION</button>
         <br><br><br>
         <div class="input-container">
             <input type="text" id="input-operation" placeholder="Enter operation">
@@ -120,7 +120,7 @@ const equations = [
     "8x - 6 = 18", "33 = 10x + 3", "6 = 2x - 4", "3x + 2 = 11", "12 = 4x - 8",
     "2x + 5 = 3x - 1", "4x - 7 = x + 8", "5x + 3 = 2x + 12", "6x - 4 = 3x + 11",
     "7x + 2 = 4x + 14", "8x - 3 = 5x + 9", "9x + 1 = 6x + 10", "10x - 2 = 7x + 13",
-    "3x + 4 = x + 10", "5x - 2 = 2x + 7", "6x + 3 = 3x + 12", "7x - 5 = 4x + 10",
+    "3x + 4 = x + 10",  "6x + 3 = 3x + 12", "7x - 5 = 4x + 10",
     "9x + 2 = 6x + 11", "10x - 4 = 7x + 8", "2x + 7 = x + 12", "4x + 1 = 2x + 9",
     "5x - 3 = 3x + 5", "6x + 4 = 4x + 10", "8x - 1 = 5x + 11", "9x + 3 = 6x + 15",
     "x / 2 = 5", "x / 3 + 4 = 7", "x / 4 - 2 = 3", "x / 5 + 1 = 6", "x / 6 = 2",
@@ -184,12 +184,15 @@ function checkIfSolved(left, right) {
 
 function applyOperation(left, right, operation) {
     try {
-        // Create a set of simplification rules that do NOT include the factoring rule
+        // Create a set of simplification rules that EXPLICITLY prevent factoring
         const noFactorRules = math.simplify.rules.filter(rule => rule.name !== 'factor');
 
+        // Also remove automatic distribution rules that might cause issues
+        const filteredRules = noFactorRules.filter(rule => rule.name !== 'expand');
+
         // Apply the operation to both sides, ensuring explicit addition/subtraction formatting
-        left = math.simplify(`(${left}) ${operation}`, noFactorRules).toString();
-        right = math.simplify(`(${right}) ${operation}`, noFactorRules).toString();
+        left = math.simplify(`(${left}) ${operation}`, filteredRules).toString();
+        right = math.simplify(`(${right}) ${operation}`, filteredRules).toString();
 
         // Prevent unexpected factorization by ensuring terms are properly combined
         left = math.simplify(left, { exactFractions: true }).toString();
@@ -199,7 +202,7 @@ function applyOperation(left, right, operation) {
         left = formatEquation(left);
         right = formatEquation(right);
 
-        // Ensure subtraction does NOT turn into unexpected factored expressions
+        // Prevent unwanted multiplication/factorization effects
         left = left.replace(/\*\s*\(/g, "(");
         right = right.replace(/\*\s*\(/g, "(");
 
@@ -217,6 +220,7 @@ function applyOperation(left, right, operation) {
 
     return [left, right];
 }
+
 
 
 function logOperation(operation, left, right) {

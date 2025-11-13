@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>Skapa raka linjer med funktionen: y = kx + m </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --accent-soft: #1d4ed8;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1f2933, #020617);
+      color: var(--text);
+    }
+
+    .app {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px 20px;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.7);
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 800px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      margin: 0 0 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    h1 span {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 80vh;         /* Anpassa till skärmens höjd */
+      max-height: 80vh;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #111827;
+      display: block;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: space-between;
+      min-height: 0;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-row label {
+      width: 1.5rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .value-badge {
+      min-width: 3.5rem;
+      text-align: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #020617;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.9rem;
+    }
+
+    .equation-display {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .equation-display code {
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #111827;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      margin: 0 0 4px;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .inline-math {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    .input-group {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .input-group span {
+      font-size: 0.9rem;
+    }
+
+    .input-group input {
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .input-group button {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: var(--accent-soft);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s ease;
+    }
+
+    .input-group button:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(56, 189, 248, 0.25);
+    }
+
+    .tiny {
+      display: none;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .point-list {
+	display:none;
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="left-panel">
+      <h1>
+        Skapa raka linjer
+        <span>Raka linjer enligt funktionen y = kx + m</span>
+      </h1>
+
+      <!-- Graf -->
+      <canvas id="graph"></canvas>
+    </div>
+
+    <div class="right-panel">
+	
+	      <div class="card">
+        <h2>Vad är k- och m-värdet?</h2>
+        <p>
+          <span class="inline-math">k</span> är lutningen: hur mycket y ändras när x ökar med 1.<br /><br>
+          <span class="inline-math">m</span> är där linjen korsar y-axeln (där på linjen x = 0).
+        </p>
+        <div class="point-list" id="pointList"></div>
+      </div>
+	
+      <div class="card">
+        <h2>Styr linjen genom att justera k- och m-värdet i y=kx+m</h2>
+        <!-- Sliders -->
+        <div class="controls">
+          <div class="control-row">
+            <label for="m">k</label>
+            <input id="m" type="range" min="-5" max="5" step="0.1" value="1" />
+            <div class="value-badge" id="mValue">1.0</div>
+          </div>
+          <div class="control-row">
+            <label for="b">m</label>
+            <input id="b" type="range" min="-10" max="10" step="0.5" value="0" />
+            <div class="value-badge" id="bValue">0.0</div>
+          </div>
+        </div>
+
+        <!-- Ekvation -->
+        <div class="equation-display">
+          <span>Aktuell funktion:</span>
+          <code id="equationText">y = x</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Skriv in din egen funktion</h2>
+        <p>Skapa en linje enligt funktionen <span class="inline-math">y = kx + m</span>, t.ex.<br>
+           <span class="inline-math">y = 2x + 3</span> eller <span class="inline-math">y = -0.5x - 4</span>.
+        </p>
+        <div class="input-group">
+          <span>y =</span>
+          <input id="functionInput" placeholder="2x + 3" />
+          <button id="applyBtn">OK</button>
+        </div>
+        <div class="tiny">
+          You can omit the 1 in front of x (<span class="inline-math">x + 2</span> = <span class="inline-math">1x + 2</span>),
+          or write just a number (<span class="inline-math">y = 3</span> → slope 0).
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("graph");
+    const ctx = canvas.getContext("2d");
+
+    const mSlider = document.getElementById("m");
+    const bSlider = document.getElementById("b");
+    const mValue = document.getElementById("mValue");
+    const bValue = document.getElementById("bValue");
+    const eqText = document.getElementById("equationText");
+    const pointList = document.getElementById("pointList");
+
+    const fnInput = document.getElementById("functionInput");
+    const applyBtn = document.getElementById("applyBtn");
+
+    // Koordinatsystem-inställningar
+    const worldMin = -10;
+    const worldMax = 10;
+    const range = worldMax - worldMin;
+
+    let width, height, scale;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width;
+      canvas.height = height;
+      scale = width / range; // pixlar per enhet (fyrkantigt system)
+      updateFromSliders();   // rita om vid storleksändring
+    }
+
+    function worldToScreen(x, y) {
+      const sx = width / 2 + x * scale;
+      const sy = height / 2 - y * scale;
+      return { x: sx, y: sy };
+    }
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Bakgrund
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(0, 0, width, height);
+
+      // Rutnät
+      ctx.lineWidth = 1;
+      for (let i = worldMin; i <= worldMax; i++) {
+        // Vertikala linjer
+        const vx = worldToScreen(i, 0).x;
+        ctx.beginPath();
+        ctx.strokeStyle = i === 0 ? "#e5e7eb" : "rgba(148, 163, 184, 0.25)";
+        ctx.moveTo(vx, 0);
+        ctx.lineTo(vx, height);
+        ctx.stroke();
+
+        // Horisontella linjer
+        const hy = worldToScreen(0, i).y;
+        ctx.beginPath();
+        ctx.strokeStyle = i === 0 ? "#e5e7eb" : "rgba(148, 163, 184, 0.25)";
+        ctx.moveTo(0, hy);
+        ctx.lineTo(width, hy);
+        ctx.stroke();
+      }
+
+      // Talförtydliganden på axlar
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "10px system-ui";
+      for (let i = worldMin; i <= worldMax; i++) {
+        if (i === 0) continue;
+
+        const xPos = worldToScreen(i, 0).x;
+        const yZero = worldToScreen(0, 0).y;
+        ctx.fillText(i.toString(), xPos - 3, yZero + 12);
+
+        const yPos = worldToScreen(0, i).y;
+        const xZero = worldToScreen(0, 0).x;
+        ctx.fillText(i.toString(), xZero + 4, yPos + 3);
+      }
+    }
+
+    function drawLine(m, b) {
+      if (!width || !height) return;
+
+      drawGrid();
+
+      // Beräkna y-värden vid vänster och höger kant
+      const x1 = worldMin;
+      const y1 = m * x1 + b;
+      const x2 = worldMax;
+      const y2 = m * x2 + b;
+
+      const p1 = worldToScreen(x1, y1);
+      const p2 = worldToScreen(x2, y2);
+
+      ctx.beginPath();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#38bdf8";
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Markera några exempel-punkter
+      const xs = [-1, 0, 1];
+      ctx.fillStyle = "#f97316";
+      xs.forEach((x) => {
+        const y = m * x + b;
+        if (y < worldMin || y > worldMax) return;
+        const p = worldToScreen(x, y);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function updateEquationDisplay(m, b) {
+      // Formatera k (lutningen)
+      let mStr;
+      if (m === 0) {
+        mStr = "0";
+      } else if (m === 1) {
+        mStr = "x";
+      } else if (m === -1) {
+        mStr = "-x";
+      } else {
+        mStr = m.toFixed(1).replace(/\.0$/, "") + "x";
+      }
+
+      // Formatera m (skärning)
+      let bStr = "";
+      if (b > 0) {
+        bStr = " + " + b.toFixed(1).replace(/\.0$/, "");
+      } else if (b < 0) {
+        bStr = " - " + Math.abs(b).toFixed(1).replace(/\.0$/, "");
+      } else if (m === 0) {
+        // y = 0x + 0 → visa bara 0
+        mStr = "0";
+      }
+
+      eqText.textContent = "y = " + mStr + bStr;
+
+      // Uppdatera exempel-punkter
+      const points = [-2, -1, 0, 1, 2].map((x) => ({
+        x,
+        y: +(m * x + b).toFixed(1),
+      }));
+      pointList.innerHTML =
+        "Exempel-punkter: " +
+        points
+          .map((p) => `<span class="pill">(${p.x}, ${p.y})</span>`)
+          .join("");
+    }
+
+    function updateFromSliders() {
+      const m = parseFloat(mSlider.value);
+      const b = parseFloat(bSlider.value);
+      mValue.textContent = m.toFixed(1);
+      bValue.textContent = b.toFixed(1);
+      drawLine(m, b);
+      updateEquationDisplay(m, b);
+    }
+
+    // Enkel parser för t.ex. "2x+3", "-0.5x - 4", "3", "x-1"
+    function parseFunctionText(text) {
+      text = text.replace(/\s+/g, "").toLowerCase();
+
+      if (!text.includes("x")) {
+        // Bara konstant: y = b
+        const b = parseFloat(text);
+        if (isNaN(b)) return null;
+        return { m: 0, b };
+      }
+
+      const parts = text.split("x");
+      let mPart = parts[0]; // "", "-", "2", "-0.5"
+      let rest = parts[1] || ""; // efter x
+
+      let m;
+      if (mPart === "" || mPart === "+") {
+        m = 1;
+      } else if (mPart === "-") {
+        m = -1;
+      } else {
+        m = parseFloat(mPart);
+      }
+      if (isNaN(m)) return null;
+
+      let b = 0;
+      if (rest) {
+        b = parseFloat(rest);
+        if (isNaN(b)) return null;
+      }
+
+      return { m, b };
+    }
+
+    mSlider.addEventListener("input", updateFromSliders);
+    bSlider.addEventListener("input", updateFromSliders);
+
+    applyBtn.addEventListener("click", () => {
+      const text = fnInput.value.trim();
+      if (!text) return;
+
+      const parsed = parseFunctionText(text);
+      if (!parsed) {
+        alert("Jag kunde inte tolka funktionen. Testa t.ex. 2x+3 eller -0.5x-4.");
+        return;
+      }
+
+      const { m, b } = parsed;
+
+      // Uppdatera sliders om inom intervallet
+      if (m >= -5 && m <= 5) mSlider.value = m;
+      if (b >= -10 && b <= 10) bSlider.value = b;
+
+      mValue.textContent = m.toFixed(1);
+      bValue.textContent = b.toFixed(1);
+      drawLine(m, b);
+      updateEquationDisplay(m, b);
+    });
+
+    fnInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") applyBtn.click();
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    // Första ritningen
+    resizeCanvas();
+  </script>
+</body>
+</html>

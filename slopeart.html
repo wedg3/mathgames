@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Linear Art Lab</title>
+  <style>
+    :root {
+      --bg-main: #060812;
+      --bg-panel: #101521;
+      --bg-input: #1a2030;
+      --grid: #272c3b;
+      --grid-soft: #171b28;
+      --axis: #f5f5f5;
+      --text-main: #f5f5ff;
+      --text-muted: #9aa0ba;
+      --error: #ff6b81;
+      --border-soft: #23273a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top left, #1b203a 0, #050611 60%);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-shell {
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(
+        135deg,
+        rgba(18, 24, 44, 0.98),
+        rgba(6, 8, 18, 0.98)
+      );
+      border-radius: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.02);
+      display: flex;
+      padding: 16px 16px;
+      gap: 16px;
+      backdrop-filter: blur(16px);
+    }
+
+    .left-pane {
+      flex: 1 1 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .canvas-layout {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 100%;
+    }
+
+    .canvas-wrapper {
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      background: radial-gradient(circle at center, #151a28 0, #050711 80%);
+      border-radius: 18px;
+      border: 1px solid var(--border-soft);
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        inset 0 0 25px rgba(0, 0, 0, 0.7),
+        0 20px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    #graphCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .fill-panel {
+      width: 56px;
+      background: rgba(8, 10, 20, 0.95);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      padding: 6px 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .fill-button {
+      width: 100%;
+      padding: 4px 0;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.7rem;
+    }
+
+    .fill-button.active {
+      border-color: #ffcc66;
+      background: rgba(255, 204, 102, 0.15);
+      color: #f5f5ff;
+    }
+
+    .fill-panel input[type="color"] {
+      width: 30px;
+      height: 20px;
+      border-radius: 999px;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .fill-panel input[type="range"] {
+      writing-mode: bt-lr;
+      -webkit-appearance: slider-vertical;
+      width: 26px;
+      height: 80px;
+      margin: 0;
+    }
+
+    .fill-panel-label {
+      font-size: 0.65rem;
+      opacity: 0.8;
+    }
+
+    .right-pane {
+      width: 280px;
+      flex: 0 0 auto;
+      background: var(--bg-panel);
+      border-radius: 18px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .help-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0.85;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .help-hint:hover {
+      color: #ffcc66;
+    }
+
+    .functions-list {
+      margin-top: 4px;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    .functions-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .functions-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .functions-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .function-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+      padding: 4px 6px;
+      border-radius: 10px;
+      transition: background 0.15s ease, box-shadow 0.15s ease,
+        border-color 0.15s ease;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .function-row:nth-child(odd) {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .function-row-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .function-row input[type="text"] {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 4px 7px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--bg-input);
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .function-row input[type="text"]::placeholder {
+      color: rgba(154, 160, 186, 0.6);
+    }
+
+    .function-row input[type="text"]:focus {
+      border-color: #ffcc66;
+      box-shadow: 0 0 0 1px rgba(255, 204, 102, 0.2);
+      background: #1f2536;
+    }
+
+    .function-row.selected {
+      border-color: rgba(255, 204, 102, 0.7);
+      background: rgba(255, 204, 102, 0.1);
+      box-shadow: 0 0 16px rgba(255, 204, 102, 0.25);
+    }
+
+    .function-row.error input[type="text"] {
+      border-color: var(--error);
+    }
+
+    .error-badge {
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      font-size: 0.65rem;
+      color: var(--error);
+    }
+
+    /* Floating color panel for LINES */
+    #colorPanel {
+      position: fixed;
+      display: none;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(15, 19, 35, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+      align-items: center;
+      gap: 6px;
+      z-index: 50;
+    }
+
+    #lineColor {
+      width: 32px;
+      height: 20px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    /* Help overlay */
+    .help-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .help-dialog {
+      background: #101421;
+      border-radius: 16px;
+      padding: 18px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      font-size: 0.9rem;
+    }
+
+    .help-dialog h2 {
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .help-dialog ul {
+      padding-left: 18px;
+      margin: 8px 0 10px;
+    }
+
+    .help-dialog li {
+      margin-bottom: 4px;
+    }
+
+    .help-close {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .help-close:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        flex-direction: column;
+      }
+      .right-pane {
+        width: 100%;
+        height: 40vh;
+        order: -1;
+      }
+      .left-pane {
+        height: 55vh;
+      }
+      .canvas-layout {
+        justify-content: center;
+      }
+      .canvas-wrapper {
+        height: 100%;
+        aspect-ratio: 1 / 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="left-pane">
+      <div class="canvas-layout">
+        <div class="canvas-wrapper">
+          <canvas id="graphCanvas"></canvas>
+        </div>
+        <div class="fill-panel">
+          <button id="fillToolBtn" class="fill-button">Fyll</button>
+          
+          <div class="fill-panel-label">Färg</div>
+          <input type="color" id="fillColor" value="#ff66aa" />
+          <div class="fill-panel-label">α</div>
+          <input type="range" id="fillOpacity" min="0.1" max="1" step="0.05" value="0.4" />
+		  <button id="eraseToolBtn" class="fill-button">Sudda</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-pane">
+<p><center>Välkommen till linjekonst!</center></p>	
+      <div id="helpHint" class="help-hint">Klicka för hjälp</div>
+      <div class="functions-list" id="functionsList"></div>
+    </div>
+  </div>
+
+  <!-- Floating color panel for LINES -->
+  <div id="colorPanel">
+    <input type="color" id="lineColor" />
+  </div>
+
+  <!-- Help overlay -->
+  <div id="helpOverlay" class="help-overlay">
+    <div class="help-dialog">
+<h2>Hjälp</h2>
+<ul>
+  <li>Med det här programmet kan du rita med funtioner! Testa att rita ett hus eller något annat! </li>
+  <li>Skriv funktioner som <code>2x+1</code>, <code>-0,5x+3</code>, <code>x-4</code> eller <code>3</code>.</li>
+  <li><b>Markera linjer:</b> Klicka på en linje, eller dra en ruta runt linjer. Shift-klicka för att lägga till/ta bort.</li>
+  <li>När du markerat en linje kan du byta färg på den med den flytande färgpanelen som dyker upp</li>
+  <li><b>Fyllverktyg:</b> Använd Fyll-knappen bredvid koordinatsystemet. Välj fyllnadsfärg och opacitet och klicka sedan mellan linjerna för att färglägga det området.</li>
+  <li><b>Sudd:</b> Använd Sudda-knappen och klicka på ett ifyllt område för att ta bort fyllningen.</li>
+
+</ul>
+
+      <button id="helpClose" class="help-close">Stäng (H / Esc)</button>
+    </div>
+  </div>
+
+  <script>
+    const NUM_LINES = 30;
+    const X_MIN = -10;
+    const X_MAX = 10;
+    const Y_MIN = -10;
+    const Y_MAX = 10;
+    const CLICK_DISTANCE_THRESHOLD = 8; // pixels
+    const BLOCK_RADIUS = 3; // barrier thickness for fill
+
+    const canvas = document.getElementById("graphCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const functionsList = document.getElementById("functionsList");
+    const colorPanel = document.getElementById("colorPanel");
+    const lineColorInput = document.getElementById("lineColor");
+
+    const fillToolBtn = document.getElementById("fillToolBtn");
+    const eraseToolBtn = document.getElementById("eraseToolBtn");
+    const fillColorInput = document.getElementById("fillColor");
+    const fillOpacityInput = document.getElementById("fillOpacity");
+
+    const helpOverlay = document.getElementById("helpOverlay");
+    const helpClose = document.getElementById("helpClose");
+    const helpHint = document.getElementById("helpHint");
+
+    const lines = [];
+    const selectedIndices = new Set();
+
+    let fillActive = false;
+    let eraseActive = false;
+
+    // Selection box
+    let dragStart = null;
+    let dragCurrent = null;
+    let isDragging = false;
+
+    // Offscreen canvas for fills
+    let fillCanvas = null;
+    let fillCtx = null;
+
+    function randomPastelColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 75%, 60%)`;
+    }
+
+    function createFunctionRows() {
+      for (let i = 0; i < NUM_LINES; i++) {
+        const row = document.createElement("div");
+        row.className = "function-row";
+        row.dataset.index = i;
+
+        const label = document.createElement("div");
+        label.className = "function-row-label";
+        label.textContent = "y =";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.autocomplete = "off";
+        input.spellcheck = false;
+        input.placeholder = "";
+
+        row.appendChild(label);
+        row.appendChild(input);
+
+        functionsList.appendChild(row);
+
+        const lineObj = {
+          expr: "",
+          m: 0,
+          b: 0,
+          active: false,
+          color: randomPastelColor(),
+          inputEl: input,
+          rowEl: row,
+          errorEl: null,
+        };
+
+        lines.push(lineObj);
+
+        input.addEventListener("input", () => {
+          handleExpressionChange(i, input.value);
+        });
+      }
+    }
+
+    function initFillCanvas() {
+      fillCanvas = document.createElement("canvas");
+      fillCtx = fillCanvas.getContext("2d");
+    }
+
+    function setCanvasSize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (fillCanvas) {
+        const w = rect.width;
+        const h = rect.height;
+        if (fillCanvas.width !== w || fillCanvas.height !== h) {
+          fillCanvas.width = w;
+          fillCanvas.height = h;
+          fillCtx.setTransform(1, 0, 0, 1, 0, 0);
+          // fills cleared on actual resize
+        }
+      }
+    }
+
+    function xToPx(x) {
+      const w = canvas.clientWidth;
+      return ((x - X_MIN) / (X_MAX - X_MIN)) * w;
+    }
+
+    function yToPx(y) {
+      const h = canvas.clientHeight;
+      return h - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * h;
+    }
+
+    function parseLinearExpression(expr) {
+      let s = expr.replace(/\s+/g, "");
+      if (!s) return null;
+
+      if (!s.includes("x") && !s.includes("X")) {
+        const b = parseFloat(s);
+        if (Number.isNaN(b)) return null;
+        return { m: 0, b };
+      }
+
+      s = s.replace("X", "x");
+      const xIndex = s.indexOf("x");
+      if (xIndex === -1) return null;
+
+      const left = s.slice(0, xIndex);
+      const right = s.slice(xIndex + 1);
+
+      let m;
+      if (left === "" || left === "+") {
+        m = 1;
+      } else if (left === "-") {
+        m = -1;
+      } else {
+        m = parseFloat(left);
+        if (Number.isNaN(m)) return null;
+      }
+
+      let b = 0;
+      if (right) {
+        b = parseFloat(right);
+        if (Number.isNaN(b)) return null;
+      }
+
+      return { m, b };
+    }
+
+    function handleExpressionChange(index, value) {
+      const line = lines[index];
+      const row = line.rowEl;
+      line.expr = value;
+
+      row.classList.remove("error");
+      if (line.errorEl) {
+        line.errorEl.remove();
+        line.errorEl = null;
+      }
+
+      if (!value.trim()) {
+        line.active = false;
+        render();
+        return;
+      }
+
+      const parsed = parseLinearExpression(value);
+      if (!parsed) {
+        line.active = false;
+        row.classList.add("error");
+        const err = document.createElement("span");
+        err.className = "error-badge";
+        err.textContent = "ogiltig";
+        row.appendChild(err);
+        line.errorEl = err;
+        render();
+        return;
+      }
+
+      line.m = parsed.m;
+      line.b = parsed.b;
+      line.active = true;
+
+      render();
+    }
+
+    function drawGrid() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const grd = ctx.createLinearGradient(0, 0, w, h);
+      grd.addColorStop(0, "#080a14");
+      grd.addColorStop(1, "#050711");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.lineWidth = 1;
+
+      for (let x = Math.ceil(X_MIN); x <= X_MAX; x++) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.strokeStyle =
+          x === 0
+            ? "rgba(245,245,245,0.9)"
+            : x % 5 === 0
+            ? "#272c3b"
+            : "#171b28";
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, h);
+        ctx.stroke();
+      }
+
+      for (let y = Math.ceil(Y_MIN); y <= Y_MAX; y++) {
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.strokeStyle =
+          y === 0
+            ? "rgba(245,245,245,0.9)"
+            : y % 5 === 0
+            ? "#272c3b"
+            : "#171b28";
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+        ctx.stroke();
+      }
+
+      const originX = xToPx(0);
+      const originY = yToPx(0);
+
+      // Tiny axis numbers
+      ctx.fillStyle = "#7f8499";
+      ctx.font = "9px system-ui";
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (let x = Math.ceil(X_MIN); x <= X_MAX; x++) {
+        if (x === 0) continue;
+        const px = xToPx(x);
+        const py = originY;
+        if (px < 12 || px > w - 12 || py < 0 || py > h - 10) continue;
+        ctx.fillText(x.toString(), px, py + 3);
+      }
+
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let y = Math.ceil(Y_MIN); y <= Y_MAX; y++) {
+        if (y === 0) continue;
+        const px = originX;
+        const py = yToPx(y);
+        if (py < 8 || py > h - 8 || px < 0 || px > w - 6) continue;
+        ctx.fillText(y.toString(), px - 4, py);
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = "#ffffff";
+      ctx.arc(originX, originY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawFills() {
+      if (!fillCanvas) return;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      ctx.drawImage(fillCanvas, 0, 0, w, h);
+    }
+
+    function drawLines() {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.active) continue;
+
+        const x1 = X_MIN;
+        const x2 = X_MAX;
+        const y1 = line.m * x1 + line.b;
+        const y2 = line.m * x2 + line.b;
+
+        const px1 = xToPx(x1);
+        const py1 = yToPx(y1);
+        const px2 = xToPx(x2);
+        const py2 = yToPx(y2);
+
+        const isSelected = selectedIndices.has(i);
+
+        if (isSelected) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.35)";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(px1, py1);
+          ctx.lineTo(px2, py2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = isSelected ? 2.5 : 1.6;
+        ctx.beginPath();
+        ctx.moveTo(px1, py1);
+        ctx.lineTo(px2, py2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawSelectionRect() {
+      if (!isDragging || !dragStart || !dragCurrent || fillActive || eraseActive) return;
+
+      const x1 = Math.min(dragStart.x, dragCurrent.x);
+      const y1 = Math.min(dragStart.y, dragCurrent.y);
+      const x2 = Math.max(dragStart.x, dragCurrent.x);
+      const y2 = Math.max(dragStart.y, dragCurrent.y);
+      const w = x2 - x1;
+      const h = y2 - y1;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.6)";
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x1, y1, w, h);
+      ctx.fillStyle = "rgba(255,255,255,0.08)";
+      ctx.fillRect(x1, y1, w, h);
+      ctx.restore();
+    }
+
+    function render() {
+      setCanvasSize();
+      drawGrid();
+      drawFills();
+      drawLines();
+      drawSelectionRect();
+    }
+
+    function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      if (dx === 0 && dy === 0) {
+        return Math.hypot(px - x1, py - y1);
+      }
+      const t =
+        ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
+      const tClamped = Math.max(0, Math.min(1, t));
+      const cx = x1 + tClamped * dx;
+      const cy = y1 + tClamped * dy;
+      return Math.hypot(px - cx, py - cy);
+    }
+
+    function updateSelectionUI() {
+      lines.forEach((line, i) => {
+        if (selectedIndices.has(i)) {
+          line.rowEl.classList.add("selected");
+        } else {
+          line.rowEl.classList.remove("selected");
+        }
+      });
+
+      if (selectedIndices.size === 0) {
+        colorPanel.style.display = "none";
+      }
+    }
+
+    function showColorPanelAt(clientX, clientY) {
+      if (selectedIndices.size === 0) {
+        colorPanel.style.display = "none";
+        return;
+      }
+      const firstIndex = selectedIndices.values().next().value;
+      const firstColor = lines[firstIndex].color;
+      if (/^#/.test(firstColor)) {
+        try {
+          lineColorInput.value = firstColor;
+        } catch {}
+      }
+      colorPanel.style.display = "flex";
+      const offset = 10;
+      colorPanel.style.left = clientX + offset + "px";
+      colorPanel.style.top = clientY + offset + "px";
+    }
+
+    function handleLineClick(event, px, py) {
+      let closestIndex = -1;
+      let closestDistance = Infinity;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.active) continue;
+
+        const x1 = X_MIN;
+        const x2 = X_MAX;
+        const y1 = line.m * x1 + line.b;
+        const y2 = line.m * x2 + line.b;
+
+        const sx1 = xToPx(x1);
+        const sy1 = yToPx(y1);
+        const sx2 = xToPx(x2);
+        const sy2 = yToPx(y2);
+
+        const dist = pointToSegmentDistance(
+          px,
+          py,
+          sx1,
+          sy1,
+          sx2,
+          sy2
+        );
+        if (dist < closestDistance) {
+          closestDistance = dist;
+          closestIndex = i;
+        }
+      }
+
+      if (
+        closestIndex === -1 ||
+        closestDistance > CLICK_DISTANCE_THRESHOLD
+      ) {
+        selectedIndices.clear();
+        updateSelectionUI();
+        render();
+        return;
+      }
+
+      if (event.shiftKey) {
+        if (selectedIndices.has(closestIndex)) {
+          selectedIndices.delete(closestIndex);
+        } else {
+          selectedIndices.add(closestIndex);
+        }
+      } else {
+        if (
+          selectedIndices.size === 1 &&
+          selectedIndices.has(closestIndex)
+        ) {
+          selectedIndices.clear();
+        } else {
+          selectedIndices.clear();
+          selectedIndices.add(closestIndex);
+        }
+      }
+
+      updateSelectionUI();
+      render();
+
+      if (selectedIndices.size > 0) {
+        showColorPanelAt(event.clientX, event.clientY);
+      }
+    }
+
+    function performBoxSelection(x1, y1, x2, y2, additive) {
+      const rectLeft = Math.min(x1, x2);
+      const rectRight = Math.max(x1, x2);
+      const rectTop = Math.min(y1, y2);
+      const rectBottom = Math.max(y1, y2);
+
+      if (!additive) {
+        selectedIndices.clear();
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.active) continue;
+
+        let intersects = false;
+        const samples = 60;
+        for (let s = 0; s <= samples; s++) {
+          const t = s / samples;
+          const xWorld = X_MIN + t * (X_MAX - X_MIN);
+          const yWorld = line.m * xWorld + line.b;
+          const px = xToPx(xWorld);
+          const py = yToPx(yWorld);
+          if (
+            px >= rectLeft &&
+            px <= rectRight &&
+            py >= rectTop &&
+            py <= rectBottom
+          ) {
+            intersects = true;
+            break;
+          }
+        }
+
+        if (intersects) {
+          selectedIndices.add(i);
+        }
+      }
+
+      updateSelectionUI();
+    }
+
+    function hexToRgb(hex) {
+      let h = hex.replace("#", "");
+      if (h.length === 3) {
+        h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      }
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return { r, g, b };
+    }
+
+    function bucketFillAt(px, py, colorHex, opacity, mode = "paint") {
+      if (!fillCanvas || !fillCtx) return;
+
+      const w = fillCanvas.width;
+      const h = fillCanvas.height;
+      const startX = Math.floor(px);
+      const startY = Math.floor(py);
+      if (startX < 0 || startX >= w || startY < 0 || startY >= h) return;
+
+      const segments = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.active) continue;
+        const x1 = X_MIN;
+        const x2 = X_MAX;
+        const y1 = line.m * x1 + line.b;
+        const y2 = line.m * x2 + line.b;
+        segments.push({
+          x1: xToPx(x1),
+          y1: yToPx(y1),
+          x2: xToPx(x2),
+          y2: yToPx(y2),
+        });
+      }
+
+      function isBlocked(x, y) {
+        for (let i = 0; i < segments.length; i++) {
+          const s = segments[i];
+          const d = pointToSegmentDistance(x, y, s.x1, s.y1, s.x2, s.y2);
+          if (d <= BLOCK_RADIUS) return true;
+        }
+        return false;
+      }
+
+      if (isBlocked(startX, startY)) return;
+
+      const visited = new Uint8Array(w * h);
+      const qx = [];
+      const qy = [];
+      let qi = 0;
+
+      const idx0 = startY * w + startX;
+      visited[idx0] = 1;
+      qx.push(startX);
+      qy.push(startY);
+
+      let prevOp = fillCtx.globalCompositeOperation;
+
+      if (mode === "paint") {
+        const { r, g, b } = hexToRgb(colorHex || "#ffffff");
+        fillCtx.globalCompositeOperation = "source-over";
+        fillCtx.fillStyle = `rgba(${r},${g},${b},${opacity})`;
+      } else if (mode === "erase") {
+        fillCtx.globalCompositeOperation = "destination-out";
+        fillCtx.fillStyle = `rgba(0,0,0,${opacity})`;
+      }
+
+      while (qi < qx.length) {
+        const x = qx[qi];
+        const y = qy[qi];
+        qi++;
+
+        fillCtx.fillRect(x, y, 1, 1);
+
+        const neighbors = [
+          [x + 1, y],
+          [x - 1, y],
+          [x, y + 1],
+          [x, y - 1],
+        ];
+
+        for (let k = 0; k < neighbors.length; k++) {
+          const nx = neighbors[k][0];
+          const ny = neighbors[k][1];
+          if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+          const idx = ny * w + nx;
+          if (visited[idx]) continue;
+          if (isBlocked(nx, ny)) continue;
+          visited[idx] = 1;
+          qx.push(nx);
+          qy.push(ny);
+        }
+      }
+
+      fillCtx.globalCompositeOperation = prevOp;
+    }
+
+    // ===== Event handling =====
+
+    function onCanvasMouseDown(e) {
+      if (fillActive || eraseActive) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      dragStart = { x, y };
+      dragCurrent = { x, y };
+      isDragging = false;
+    }
+
+    function onCanvasMouseMove(e) {
+      if (fillActive || eraseActive) return;
+      if (!dragStart) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      dragCurrent = { x, y };
+      const dx = x - dragStart.x;
+      const dy = y - dragStart.y;
+      if (!isDragging && Math.hypot(dx, dy) > 4) {
+        isDragging = true;
+      }
+      if (isDragging) {
+        render();
+      }
+    }
+
+    function onCanvasMouseUp(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (fillActive) {
+        const opacity = parseFloat(fillOpacityInput.value) || 0.4;
+        bucketFillAt(x, y, fillColorInput.value, opacity, "paint");
+        render();
+        return;
+      }
+
+      if (eraseActive) {
+        bucketFillAt(x, y, null, 1, "erase");
+        render();
+        return;
+      }
+
+      if (!dragStart) {
+        return;
+      }
+
+      const wasDragging = isDragging;
+      const start = dragStart;
+      dragStart = null;
+      dragCurrent = null;
+      isDragging = false;
+
+      if (wasDragging) {
+        performBoxSelection(start.x, start.y, x, y, e.shiftKey);
+        render();
+        if (selectedIndices.size > 0) {
+          const midX = (start.x + x) / 2;
+          const midY = (start.y + y) / 2;
+          showColorPanelAt(rect.left + midX, rect.top + midY);
+        }
+      } else {
+        handleLineClick(e, x, y);
+      }
+    }
+
+    function onCanvasMouseLeave() {
+      if (dragStart && !fillActive && !eraseActive) {
+        dragStart = null;
+        dragCurrent = null;
+        isDragging = false;
+        render();
+      }
+    }
+
+    function initLineColorPicker() {
+      lineColorInput.addEventListener("input", () => {
+        const color = lineColorInput.value;
+        selectedIndices.forEach((idx) => {
+          lines[idx].color = color;
+        });
+        render();
+      });
+    }
+
+    function initFillTool() {
+      fillToolBtn.addEventListener("click", () => {
+        fillActive = !fillActive;
+        if (fillActive) {
+          eraseActive = false;
+          eraseToolBtn.classList.remove("active");
+          colorPanel.style.display = "none";
+          dragStart = null;
+          dragCurrent = null;
+          isDragging = false;
+        }
+        fillToolBtn.classList.toggle("active", fillActive);
+      });
+
+      eraseToolBtn.addEventListener("click", () => {
+        eraseActive = !eraseActive;
+        if (eraseActive) {
+          fillActive = false;
+          fillToolBtn.classList.remove("active");
+          colorPanel.style.display = "none";
+          dragStart = null;
+          dragCurrent = null;
+          isDragging = false;
+        }
+        eraseToolBtn.classList.toggle("active", eraseActive);
+      });
+    }
+
+    function showHelp() {
+      helpOverlay.style.display = "flex";
+    }
+
+    function hideHelp() {
+      helpOverlay.style.display = "none";
+    }
+
+    function toggleHelp() {
+      if (helpOverlay.style.display === "flex") hideHelp();
+      else showHelp();
+    }
+
+    function initHelp() {
+      helpHint.addEventListener("click", toggleHelp);
+      helpClose.addEventListener("click", hideHelp);
+      helpOverlay.addEventListener("click", (e) => {
+        if (e.target === helpOverlay) hideHelp();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        const tag = e.target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        if (e.key === "h" || e.key === "H") {
+          e.preventDefault();
+          toggleHelp();
+        } else if (e.key === "Escape") {
+          hideHelp();
+        }
+      });
+    }
+
+    // ----- Initialize -----
+    createFunctionRows();
+    initFillCanvas();
+    initLineColorPicker();
+    initFillTool();
+    initHelp();
+    render();
+
+    canvas.addEventListener("mousedown", onCanvasMouseDown);
+    canvas.addEventListener("mousemove", onCanvasMouseMove);
+    canvas.addEventListener("mouseup", onCanvasMouseUp);
+    canvas.addEventListener("mouseleave", onCanvasMouseLeave);
+    window.addEventListener("resize", render);
+  </script>
+</body>
+</html>

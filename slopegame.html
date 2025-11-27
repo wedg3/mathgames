@@ -308,9 +308,9 @@ function parseExpression(expr) {
 function randomLine() {
   let m = 0;
   while (m === 0) { // ensure actual slope
-    m = Math.floor(Math.random()*11)-5; // -5..5
+    m = Math.floor(Math.random()*11)-3; // -3..3
   }
-  const b = Math.floor(Math.random()*17)-8; // -8..8
+  const b = Math.floor(Math.random()*17)-6; // -6..6
   return {m, b};
 }
 
@@ -422,3 +422,4 @@ window.addEventListener("load", () => {
 </script>
 </body>
 </html>
+

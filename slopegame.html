@@ -5,13 +5,25 @@
 <title>Find the Slope!</title>
 <style>
   :root {
-    --bg-main: #060812;
-    --bg-panel: #101521;
-    --grid: #272c3b;
-    --grid-soft: #171b28;
-    --axis: #f5f5f5;
-    --text-main: #f5f5ff;
-    --text-muted: #9aa0ba;
+    /* Gradient + panel theme from your other game */
+    --grad1: #feac5e;
+    --grad2: #c779d0;
+    --grad3: #4bc0c8;
+    --bg: linear-gradient(135deg, var(--grad1), var(--grad2) 45%, var(--grad3) 100%);
+    --front-bg: linear-gradient(145deg, #5e548e 0%, #231942 70%, #0e0a1f 100%);
+    --back-bg: linear-gradient(145deg, #0a3a4a 0%, #0a2232 70%, #02141a 100%);
+    --text: #fffaf7;
+    --muted: #e6e6e6cc;
+    --border: #ffffff;
+
+    /* Map old variables to new palette */
+    --bg-main: var(--bg);
+    --bg-panel: var(--front-bg);
+    --text-main: var(--text);
+    --text-muted: var(--muted);
+    --axis: #ffffff;
+    --grid: rgba(255,255,255,0.18);
+    --grid-soft: rgba(255,255,255,0.08);
   }
 
   * {
@@ -20,44 +32,143 @@
     padding: 0;
   }
 
+  html, body {
+    height: 100%;
+  }
+
   body {
-    background: radial-gradient(circle at top left, #1b203a 0, #050611 60%);
-    font-family: courier new;
+    background: var(--bg-main);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--text-main);
     display: flex;
     flex-direction: column;
-    height: 100vh;
     overflow: hidden;
     justify-content: center;
     align-items: center;
+    text-align: center;
   }
 
   h1 {
-    margin-bottom: 8px;
-    font-size: 1.8rem;
-    letter-spacing: 0.06em;
+    
+    padding-bottom:20px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: #f5f5ff;
-    text-shadow: 0 0 12px rgba(255,255,255,0.05);
+    color: var(--text-main);
+    text-shadow:
+      0 8px 12px rgba(0, 20, 40, 0.7),
+      0 5px 2px rgba(0, 0, 0, 0.6);
   }
 
+  /* Bottom-left score */
   #score {
-    margin-bottom: 14px;
-    font-size: 1rem;
+    position: fixed;
+    left: 16px;
+    bottom: 12px;
+    font-family: "Roboto, Inter, system-ui, -apple-system, Courier New", monospace;
+    font-size: 1.8rem;
+    color: white;
+    padding: 4px 8px;
+    z-index: 1000;
+    text-align: left;
+	    text-shadow:
+      0 3px 7px rgba(0, 20, 40, 0.7),
+      0 3px 2px rgba(0, 0, 0, 0.6);
+	  
+	   background: rgba(10, 10, 30, 0.4);        /* translucent dark */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;                      /* pill shape */
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.55),
+    0 0 10px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);                /* glassy effect (if supported) */
+  }
+
+  /* Bottom-right streak */
+  #streak {
+    position: fixed;
+    right: 16px;
+    bottom: 12px;
+    font-family: "Roboto, Inter, system-ui, -apple-system, Courier New", monospace;
+	
+    font-size: 1.8rem;
+    color: white;
+    padding: 4px 8px;
+    z-index: 1000;
+    text-align: right;
+	    text-shadow:
+      0 3px 7px rgba(0, 20, 40, 0.7),
+      0 3px 2px rgba(0, 0, 0, 0.6);
+	  
+	  	   background: rgba(10, 10, 30, 0.4);        /* translucent dark */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;                      /* pill shape */
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.55),
+    0 0 10px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);                /* glassy effect (if supported) */
+  }
+
+  .game-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 0 12px;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .side-panel {
+    width: 210px;
+    max-width: 230px;
+    
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,1);
+    padding: 12px 14px;
+    box-shadow:
+      0 20px 40px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+    font-size: 0.75rem;
     color: var(--text-muted);
+    line-height: 1.4;
+    text-align: left;
+	
+			  	   background: rgba(10, 10, 30, 0.5);        /* translucent dark */
+
+  border-radius: 6px;                      /* pill shape */
+
+  backdrop-filter: blur(6px);                /* glassy effect (if supported) */
+  }
+
+  .side-panel h2 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    color: var(--text-main);
+    font-weight: 700;
+  }
+
+  .side-panel ul {
+    padding-left: 18px;
+    margin-top: 4px;
+  }
+
+  .side-panel li {
+    margin-bottom: 3px;
   }
 
   .canvas-wrapper {
-    width: min(80vmin, 85vh);
+    width: min(85vmin, 85vh);
     aspect-ratio: 1/1;
     position: relative;
-    background: radial-gradient(circle at center, #151a28 0, #050711 80%);
-    border-radius: 5px;
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--back-bg);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,1);
     overflow: hidden;
     box-shadow:
-      inset 0 0 25px rgba(0,0,0,0.7),
-      0 20px 40px rgba(0,0,0,0.8);
+      0 20px 40px rgba(0,0,0,0.6),
+      inset 0 0 18px rgba(0,0,0,0.7);
   }
 
   #graphCanvas {
@@ -66,68 +177,153 @@
     display: block;
   }
 
-  .input-bar {
-    position: fixed;
-    bottom: 5px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(10,15,25,0.9);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 4px;
-    padding: 1px 18px;
+  .function-panel {
+    width: 220px;
+    max-width: 230px;
+    background: rgba(255,255,255,0.0);
+    border-radius:4px;
+    border: 0px solid rgba(255,255,255,0.4);
+    padding: 12px 14px;
+
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 1.1rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
   }
 
-  .input-bar span {
-    color: var(--text-muted);
+  .function-panel-title {
+    font-size: 0.9rem;
+    color: white;
+    font-weight: 500;
+    box-shadow:
+      0 20px 40px rgba(255,0,0,1),
+      inset 0 1px 0 rgba(255,255,255,1);
+  }
+
+  .function-display {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: -4px;
+    gap: 6px;
+    font-size: 1.5rem;
+    border-radius: 0px;
+    font-family: "Roboto, Inter, system-ui, -apple-system, Courier New", monospace; 
+    font-weight:800;
+		    text-shadow:
+      0 3px 7px rgba(0, 20, 40, 0.7),
+      0 3px 3px rgba(0, 0, 0, 0.6);
+	
+    border: 1px solid rgba(255,255,255,0.45);
+	
+		  	   background: rgba(10, 10, 30, 0.4);        /* translucent dark */
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;                      /* pill shape */
+  box-shadow:-2
+    0 8px 18px rgba(0, 0, 0, 0.55),
+    0 0 10px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);                /* glassy effect (if supported) */
+  
+  padding-left:15px;
+  padding-top:3px;
+  padding-bottom:9px;
+  }
+
+  .function-display span {
+    color: var(--text);
+    font-weight: 600;
   }
 
   #exprInput {
     border: none;
     background: transparent;
     outline: none;
-    color: #fff;
-    font-size: 1.1rem;
-    width: 120px;
-    text-align: center;
-	font-family: Courier New, monospace;
+    color: #fffaf7;
+    font-size: 1.5rem;
+    width: 90px;
+    text-align: left;
+    font-family: "Roboto, Inter, system-ui, -apple-system, Courier New", monospace; 
+    font-weight:800;
+			    text-shadow:
+      0 3px 7px rgba(0, 20, 40, 0.7),
+      0 3px 3px rgba(0, 0, 0, 0.6);
+    border-bottom: 0px dashed rgba(255,255,255,0.4);
+    padding-bottom: 0px;
   }
 
   #exprInput::placeholder {
-    color: rgba(150,150,170,0.5);
+    color: rgba(240,230,255,0.6);
+  }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    opacity: 0.95;
   }
 
   canvas#confettiCanvas {
     position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
+    left: 0;
+    top: 0;
     pointer-events: none;
     width: 100vw;
     height: 100vh;
+    z-index: 500;
+  }
+
+  @media (max-width: 900px) {
+    .game-shell {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .side-panel,
+    .function-panel {
+      width: 90%;
+      max-width: 340px;
+    }
+    .canvas-wrapper {
+      width: min(80vmin, 55vh);
+    }
   }
 </style>
 </head>
 <body>
 
 <h1>Hitta linjens funktion</h1>
-<div id="score">Score: 0</div>
 
-<div class="canvas-wrapper">
-  <canvas id="graphCanvas"></canvas>
+<div class="game-shell">
+  <!-- Left instructions -->
+  <div class="side-panel">
+    <h2>Instruktioner</h2>
+    <ul>
+      <li>Titta på den <b>röda linjen</b>.</li>
+      <li>Skriv dess funktion i rutan till höger.</li>
+      <li>Använd formen <br>y = kx + m, t.ex. 2x+3</li>
+      <li>"k" är lutningen på linjen. "m" är var den skär y-axeln</li>
+      <li>För att få poäng måste funktionen vara helt rätt.</li>
+      <li><b>Streak</b> bryts om du gissar fel lutning eller fel m-värde.</li>
+      <li><b><i>Försök att nå en streak på 10!</i></b></li>
+    </ul>
+  </div>
+
+  <!-- Center graph -->
+  <div class="canvas-wrapper">
+    <canvas id="graphCanvas"></canvas>
+  </div>
+
+  <!-- Right function input -->
+  <div class="function-panel">
+    <div class="function-display">
+      <span>y =&nbsp;</span>
+      <input id="exprInput" type="text" placeholder="" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
 </div>
+
+<!-- Separate floating stats -->
+<div id="score">Score: 0</div>
+<div id="streak">Streak: 0</div>
 
 <canvas id="confettiCanvas"></canvas>
-
-<div class="input-bar">
-  <span>y =</span>
-  <input id="exprInput" type="text" placeholder="" autocomplete="off" spellcheck="false">
-</div>
 
 <script>
 /* -------------------
@@ -144,9 +340,12 @@ let target = null;
 let guess = null;
 
 let score = 0;
+let streak = 0;
+let roundSolved = false; // prevent scoring twice for same round
 
 const exprInput = document.getElementById("exprInput");
 const scoreEl = document.getElementById("score");
+const streakEl = document.getElementById("streak");
 
 const confettiCanvas = document.getElementById("confettiCanvas");
 const confettiCtx = confettiCanvas.getContext("2d");
@@ -174,6 +373,14 @@ window.addEventListener("resize", () => {
 });
 
 /* -------------------
+   SCORE / STREAK UI
+--------------------*/
+function updateScoreText() {
+  scoreEl.textContent = `Score: ${score}`;
+  streakEl.textContent = `Streak: ${streak}`;
+}
+
+/* -------------------
      GRID DRAWING
 --------------------*/
 function xToPx(x) {
@@ -188,21 +395,20 @@ function drawGrid() {
 
   ctx.clearRect(0,0,W,H);
 
-  // background
+  // Use darker version of back-bg for canvas interior
   const g = ctx.createLinearGradient(0,0,W,H);
-  g.addColorStop(0,"#080a14");
-  g.addColorStop(1,"#050711");
+  g.addColorStop(0, "#050815");
+  g.addColorStop(1, "#020611");
   ctx.fillStyle = g;
   ctx.fillRect(0,0,W,H);
 
-  // gridlines
   ctx.lineWidth = 1;
 
   for (let x=Math.ceil(X_MIN); x<=X_MAX; x++) {
     const px = xToPx(x);
     ctx.strokeStyle =
-      x===0 ? "rgba(245,245,245,0.9)" :
-      x%5===0 ? "#272c3b" : "#171b28";
+      x===0 ? "rgba(255,255,255,0.95)" :
+      x%5===0 ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.09)";
 
     ctx.beginPath();
     ctx.moveTo(px,0);
@@ -213,8 +419,8 @@ function drawGrid() {
   for (let y=Math.ceil(Y_MIN); y<=Y_MAX; y++) {
     const py = yToPx(y);
     ctx.strokeStyle =
-      y===0 ? "rgba(245,245,245,0.9)" :
-      y%5===0 ? "#272c3b" : "#171b28";
+      y===0 ? "rgba(255,255,255,0.95)" :
+      y%5===0 ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.09)";
 
     ctx.beginPath();
     ctx.moveTo(0,py);
@@ -222,11 +428,10 @@ function drawGrid() {
     ctx.stroke();
   }
 
-  // tiny axis numbers
   const ox = xToPx(0);
   const oy = yToPx(0);
-  ctx.fillStyle = "#7f8499";
-  ctx.font = "9px system-ui";
+  ctx.fillStyle = "rgba(255,250,247,0.9)";
+  ctx.font = "12px system-ui";
 
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -244,8 +449,7 @@ function drawGrid() {
     ctx.fillText(y, ox-4, py);
   }
 
-  // origin dot
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.arc(ox,oy,2,0,Math.PI*2);
   ctx.fill();
@@ -275,7 +479,6 @@ function parseExpression(expr) {
   if (!s) return null;
 
   if (!s.includes("x")) {
-    // constant function
     const b = parseFloat(s);
     if (isNaN(b)) return null;
     return {m:0, b};
@@ -310,7 +513,7 @@ function randomLine() {
   while (m === 0) { // ensure actual slope
     m = Math.floor(Math.random()*7)-3; // -3..3
   }
-  const b = Math.floor(Math.random()*11)-5; // -6..6
+  const b = Math.floor(Math.random()*11)-5; // -5..5
   return {m, b};
 }
 
@@ -318,62 +521,169 @@ function newRound() {
   target = randomLine();
   guess = null;
   exprInput.value = "";
+  roundSolved = false;
   draw();
 }
 
-function checkMatch() {
-  if (!guess) return false;
-  return Math.abs(guess.m - target.m) < 0.0001 &&
-         Math.abs(guess.b - target.b) < 0.0001;
+/* -------------------
+   ARCADE EXPLOSION SOUND
+--------------------*/
+function playExplosionSound() {
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  /* --- WHITE NOISE EXPLOSION (main boom) --- */
+  const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.4, audioCtx.sampleRate);
+  const noiseData = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < noiseData.length; i++) {
+    noiseData[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = noiseBuffer;
+
+  // Filter sweep for KRRRSH effect
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = "lowpass";
+  noiseFilter.frequency.setValueAtTime(3000, audioCtx.currentTime);
+  noiseFilter.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.35);
+
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(audioCtx.destination);
+
+
+  /* --- BASS THUMP (old-school boom) --- */
+  const osc = audioCtx.createOscillator();
+  const bassGain = audioCtx.createGain();
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(120, audioCtx.currentTime);       // start pitch
+  osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);  // drop pitch = boom
+
+  bassGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  bassGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+  osc.connect(bassGain);
+  bassGain.connect(audioCtx.destination);
+
+
+  /* --- START --- */
+  noise.start();
+  noise.stop(audioCtx.currentTime + 0.4);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.31);
 }
 
 /* -------------------
-      CONFETTI
+   FAIL SOUND (dun–DON)
 --------------------*/
-let confettiPieces = [];
-let confettiStart = 0;
-const CONF_DURATION = 8000;
+function playFailSound() {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-function spawnConfetti() {
-  const tier = Math.floor(score/10);
-  const count = 60 + tier*40;
+  // First "dun"
+  const osc1 = audioCtx.createOscillator();
+  const gain1 = audioCtx.createGain();
+  osc1.type = "triangle";
+  osc1.frequency.setValueAtTime(140, audioCtx.currentTime);
+  gain1.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
 
-  confettiPieces = [];
+  // Second "DON"
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.type = "square";
+  osc2.frequency.setValueAtTime(95, audioCtx.currentTime + 0.15);
+  gain2.gain.setValueAtTime(0.001, audioCtx.currentTime);
+  gain2.gain.setValueAtTime(0.1, audioCtx.currentTime + 0.15);
+  gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.32);
 
-  for (let i=0; i<count; i++) {
-    confettiPieces.push({
-      x: Math.random()*window.innerWidth,
-      y: Math.random()*-200,
-      vx: (Math.random()-0.5)*2*(1+tier*0.3),
-      vy: 2 + Math.random()*3*(1+tier*0.4),
-      size: 4 + Math.random()*6,
-      rot: Math.random()*Math.PI*2,
-      vr: (Math.random()-0.5)*0.2
-    });
-  }
-  confettiStart = performance.now();
-  requestAnimationFrame(updateConfetti);
+  osc1.connect(gain1);
+  gain1.connect(audioCtx.destination);
+
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+
+  osc1.start();
+  osc1.stop(audioCtx.currentTime + 0.20);
+
+  osc2.start(audioCtx.currentTime + 0.15);
+  osc2.stop(audioCtx.currentTime + 0.33);
 }
 
-function updateConfetti(t) {
-  const elapsed = t - confettiStart;
-  confettiCtx.clearRect(0,0,window.innerWidth,window.innerHeight);
+/* -------------------
+      FIREWORKS
+--------------------*/
+let fireworks = [];
+let fireworksStart = 0;
+const FIREWORK_DURATION = 600; // ms
 
-  confettiPieces.forEach(p=>{
-    p.x += p.vx;
-    p.y += p.vy;
-    p.rot += p.vr;
+function getOriginScreenPosition() {
+  const rect = canvas.getBoundingClientRect();
+  const ox = xToPx(0);
+  const oy = yToPx(0);
+  return {
+    x: rect.left + ox,
+    y: rect.top + oy
+  };
+}
 
-    confettiCtx.save();
-    confettiCtx.translate(p.x,p.y);
-    confettiCtx.rotate(p.rot);
-    confettiCtx.fillStyle = `hsl(${Math.random()*360},80%,60%)`;
-    confettiCtx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
-    confettiCtx.restore();
+function spawnFireworks() {
+  const origin = getOriginScreenPosition();
+  const count = 90;
+
+  fireworks = [];
+  const baseHue = Math.random() * 360;
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const maxDist = 150 + Math.random() * 250; // treat as max radius
+    const hue = baseHue + (Math.random() * 60 - 30);
+    fireworks.push({
+      x0: origin.x,
+      y0: origin.y,
+      angle,
+      maxDist,
+      color: `hsl(${hue}, 90%, 60%)`
+    });
+  }
+
+  fireworksStart = performance.now();
+  requestAnimationFrame(updateFireworks);
+}
+
+function updateFireworks(t) {
+  const elapsed = t - fireworksStart;
+  const progress = Math.min(1, elapsed / FIREWORK_DURATION);
+
+  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+  // easeOutQuad: fast at start, slows near end
+  fireworks.forEach(p => {
+    const eased = 1 - (1 - progress) * (1 - progress);
+    const dist = p.maxDist * eased;
+
+    const x = p.x0 + Math.cos(p.angle) * dist;
+    const y = p.y0 + Math.sin(p.angle) * dist;
+
+    const alpha = Math.max(0, 1 - progress);
+    confettiCtx.fillStyle = p.color
+      .replace("hsl", "hsla")
+      .replace(")", `, ${alpha})`);
+    confettiCtx.beginPath();
+    confettiCtx.arc(x, y, 3, 0, Math.PI * 2);
+    confettiCtx.fill();
   });
 
-  if (elapsed < CONF_DURATION) {
-    requestAnimationFrame(updateConfetti);
+  if (elapsed < FIREWORK_DURATION) {
+    requestAnimationFrame(updateFireworks);
+  } else {
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
   }
 }
 
@@ -382,33 +692,89 @@ function updateConfetti(t) {
 --------------------*/
 function draw() {
   drawGrid();
-
-  // if target not ready yet, just show grid
   if (!target) return;
 
-  // target line
-  drawLine(target.m, target.b, "rgba(250,18,18,1)", 1);
+  // target line (soft pinkish-red)
+  drawLine(target.m, target.b, "rgba(255,50,50,1)", 1.4);
 
-  // guess line
+  // guess line (turquoise)
   if (guess) {
-    drawLine(guess.m, guess.b, "rgba(25,250,250,0.9)", 1);
+    drawLine(guess.m, guess.b, "rgba(75,192,200,1)", 1.4);
   }
 }
 
 /* -------------------
      INPUT EVENTS
 --------------------*/
-exprInput.addEventListener("input", ()=>{
-  const expr = exprInput.value;
-  guess = parseExpression(expr);
+exprInput.addEventListener("input", () => {
+  if (!target || roundSolved) return;
 
+  const raw = exprInput.value;
+  const s = raw.replace(/\s+/g,"");
+
+  // don't judge anything until there's an "x"
+  if (!s.includes("x")) {
+    guess = null;
+    draw();
+    return;
+  }
+
+  const parsed = parseExpression(raw);
+  guess = parsed;
   draw();
 
-  if (guess && checkMatch()) {
-    score++;
-    scoreEl.textContent = "Score: " + score;
-    spawnConfetti();
-    setTimeout(newRound, 3000);
+  if (!parsed) return;
+
+  const xPos = s.indexOf("x");
+  const afterX = xPos >= 0 ? s.slice(xPos + 1) : "";
+  const hasExplicitB = /[+\-]/.test(afterX);
+
+  const mCorrect = parsed.m === target.m;
+  const bCorrect = parsed.b === target.b;
+
+  // Wrong slope -> immediate streak reset
+  if (!mCorrect) {
+    streak = 0;
+    updateScoreText();
+    playFailSound();
+    return;
+  }
+
+  // Slope correct
+  if (target.b === 0) {
+    if (bCorrect) {
+      roundSolved = true;
+      score++;
+      streak++;
+      updateScoreText();
+      playExplosionSound();
+      spawnFireworks();
+      setTimeout(newRound, 600);
+    } else {
+      streak = 0;
+      updateScoreText();
+      playFailSound();
+    }
+  } else {
+    // target b != 0
+    // Require explicit + or - after x for non-zero b (so "2x5" is not accepted)
+    if (!hasExplicitB) {
+      return;
+    }
+
+    if (bCorrect) {
+      roundSolved = true;
+      score++;
+      streak++;
+      updateScoreText();
+      playExplosionSound();
+      spawnFireworks();
+      setTimeout(newRound, 600);
+    } else {
+      streak = 0;
+      updateScoreText();
+      playFailSound();
+    }
   }
 });
 
@@ -417,12 +783,12 @@ exprInput.addEventListener("input", ()=>{
 --------------------*/
 window.addEventListener("load", () => {
   resize();
-  newRound(); // newRound() will call draw()
+  updateScoreText();
+  newRound();
+  setTimeout(() => {
+    exprInput.focus();
+  }, 50);
 });
 </script>
 </body>
 </html>
-
-
-
-

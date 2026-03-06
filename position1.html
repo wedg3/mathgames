@@ -1,195 +1,282 @@
-<script>
-/* =========================================
-   Updates:
-   - Score min 0
-   - Wrong answer: flash "-5" (no "try again" message)
-   - Mega confetti at 10 points
-   - Small pop/crack sound with confetti
-   ========================================= */
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Decimal Shift Lab</title>
+<style>
+  :root{
+    color-scheme: dark;
 
-const LEFT_GHOST = 10;
-const RIGHT_GHOST = 10;
+    /* Your palette */
+    --grad1: #feac5e;
+    --grad2: #c779d0;
+    --grad3: #4bc0c8;
 
-const exprEl = document.getElementById("expr");
-const slider = document.getElementById("shiftSlider");
-const shiftLabel = document.getElementById("shiftLabel");
-const msgEl = document.getElementById("msg");
-const lockBtn = document.getElementById("lockBtn");
-const scoreBox = document.getElementById("scoreBox");
-const penaltyFlashEl = document.getElementById("penaltyFlash");
+    --bg: linear-gradient(135deg, var(--grad1), var(--grad2) 45%, var(--grad3) 100%);
+    --front-bg: linear-gradient(145deg, #5e548e 0%, #231942 70%, #0e0a1f 100%);
+    --back-bg: linear-gradient(145deg, #0a3a4a 0%, #0a2232 70%, #02141a 100%);
 
-const numDisplayEl = document.getElementById("numDisplay");
-const digitsRowEl = document.getElementById("digitsRow");
-const dotEl = document.getElementById("movingDot");
+    --text: #fffaf7;
+    --muted: #e6e6e6cc;
+    --border: #ffffff;
 
-const confettiCanvas = document.getElementById("confetti");
-const cardEl = document.getElementById("card");
-const ctx = confettiCanvas.getContext("2d");
+    /* Extra helpers (derived) */
+    --panel-border: rgba(255,255,255,.20);
+    --panel-border-strong: rgba(255,255,255,.35);
+    --shadow: 0 12px 34px rgba(0,0,0,.45);
+  }
 
-let task = null;
-let score = 0;
+  body{
+    margin:0; padding:24px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Courier New", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap{ max-width: 840px; margin: 0 auto; }
+
+  .card{
+    position: relative;
+    background: var(--back-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding:18px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  /* Penalty flash */
+  #penaltyFlash{
+    position:absolute;
+    left:50%;
+    top:58%;
+    transform: translate(-50%, -50%);
+    padding: 10px 14px;
+    border-radius: 6px;
+    
+    background: rgba(0,0,0,.45);
+    color: red;
+    font-family: Consolas, "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 92px;
+    letter-spacing: 1px;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+    z-index: 5;
+  }
+  #penaltyFlash.show{
+    animation: penaltyPop 520ms ease-out;
+  }
+  @keyframes penaltyPop{
+    0%   { opacity: 0; transform: translate(-50%,-35%) scale(.96); }
+    40%  { opacity: 1; transform: translate(-50%,-55%) scale(1.10); }
+    100% { opacity: 0; transform: translate(-50%,-78%) scale(2.00); }
+  }
+
+  .topRow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .expr{
+    flex: 1;
+    font-family:  PT Mono, "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 34px;
+
+    background: rgba(0,0,0,.20);
+    border: 1px solid rgba(255,255,255,.32);
+    border-radius: 4px;
+
+    padding: 8px 14px;
+    margin-bottom: 14px;
+    text-align: center;
+
+    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+  }
+
+  .scoreBox{
+    margin-bottom: 14px;
+    font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 24px;
+    font-weight:800;
+    color: var(--text);
+    
+    border-radius: 4px;
+
+    padding: 10px 12px;
+    white-space: nowrap;
+    
+   
+  }
+
+  .numRow{
+    margin: 18px 0 10px;
+    display:flex; justify-content:center;
+  }
+
+  .num{
+    position: relative;
+    display: inline-block;
+    font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 44px;
+    letter-spacing: 1px;
+    user-select: none;
+    line-height: 1.2;
+    padding: 0 10px;
+    color: var(--text);
+  }
+
+  .digits{
+    display: flex;
+    gap: 5px;
+    align-items: baseline;
+  }
+
+  .digit{
+    display:inline-block;
+    width: 0.62em;
+    text-align:center;
+  }
+  .ghost{ opacity: .025; }
+  .active{ opacity: 1; }
+
+  .movingDot{
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -40%);
+    opacity: .95;
+    pointer-events: none;
+    transition: left 90ms linear;
+    color: var(--text);
+    text-shadow: 0 2px 10px rgba(0,0,0,.5);
+  }
+
+  .sliderWrap{
+    margin-top: 10px;
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  input[type="range"]{
+    width: min(450px, 100%);
+    direction: rtl;
+    accent-color: rgba(255,255,255,.85);
+  }
+
+  .controls{
+    display:flex; justify-content:center;
+    margin-top: 14px;
+	
+  }
+
+  button{
+    background: rgba(0,0,0,.20);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor:pointer;
+    box-shadow: 0 8px 18px rgba(0,0,0,.25);
+	font-family: "Courier New", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  
+  button:hover{
+    border-color: rgba(255,255,255,.40);
+    background: rgba(0,0,0,.28);
+  }
+  button:active{
+    transform: translateY(1px);
+  }
+
+  .msg{
+    margin-top: 12px;
+    font-size: 14px;
+    opacity: .92;
+    text-align:center;
+    min-height: 1.3em;
+    display:none;
+  }
+
+  .hint{
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .70;
+    text-align:center;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+
+  canvas#confetti{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    opacity:0;
+    transition: opacity 120ms linear;
+    z-index: 2;
+  }
+  canvas#confetti.on{ opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="card">
+    <canvas id="confetti"></canvas>
+    <div id="penaltyFlash" aria-hidden="true"></div>
+
+    <div class="topRow">
+      <div class="expr" id="expr">—</div>
+    </div>
+
+    <div class="numRow">
+      <div class="num" id="numDisplay" aria-label="Number with moving decimal point">
+        <div class="digits" id="digitsRow"></div>
+        <div class="movingDot" id="movingDot">.</div>
+      </div>
+    </div>
+
+    <div class="sliderWrap">
+      <input id="shiftSlider" type="range" min="-7" max="7" step="1" value="0" />
+      <div style="font-size:12px; opacity:.75;" id="shiftLabel">Flytta decimalen: 0</div>
+    </div>
+
+    <div class="controls">
+      <button id="lockBtn">SVARA</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div class="hint">
+      <div class="scoreBox" id="scoreBox">Poäng: 0</div>
+      <span style="color:#45f73b">Rätt: +1 poäng,</span>
+      <span style="color:#ff3333">Fel: −5 poäng.</span>
+      <br /><br /><b><span style="color:#ffee33">Kan du få 10 poäng så fixar du detta!</span></b>
+    </div>
+  </div>
+</div>
+
 let audioCtx = null;
 
-// ---------- utilities ----------
-function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
-function pickBaseNumber(){
-  const whole = randInt(0, 999);
-  const decimals = randInt(0, 2);
-  let frac = 0;
-  if (decimals === 1) frac = randInt(0,9);
-  if (decimals === 2) frac = randInt(0,99);
-
-  const s = decimals === 0 ? `${whole}` :
-            decimals === 1 ? `${whole}.${frac}` :
-                             `${whole}.${String(frac).padStart(2,"0")}`;
-  return (s === "0" || s === "0.0" || s === "0.00") ? "34.5" : s;
-}
-
-function pow10String(n){ return "1" + "0".repeat(n); }
-
-function renderScore(){
-  scoreBox.textContent = `Poäng: ${score}`;
-}
-
-function flashPenalty(text){
-  penaltyFlashEl.textContent = text;
-  penaltyFlashEl.classList.remove("show");
-  void penaltyFlashEl.offsetWidth;
-  penaltyFlashEl.classList.add("show");
-}
-
-function buildGhostDigits(baseStr){
-  let s = baseStr.replace(",", ".");
-  if (!s.includes(".")) s += ".";
-  if (s.startsWith(".")) s = "0" + s;
-  if (s === "-.") s = "-0.";
-  if (s.endsWith(".")) s += "0";
-
-  const sign = s.startsWith("-") ? "-" : "";
-  const core = sign ? s.slice(1) : s;
-
-  const [intRaw, fracRaw] = core.split(".");
-  const intPart = intRaw.length ? intRaw : "0";
-  const fracPart = (fracRaw ?? "");
-
-  const leftPad = "0".repeat(LEFT_GHOST);
-  const rightPad = "0".repeat(RIGHT_GHOST);
-
-  const fullInt = leftPad + intPart;
-  const fullFrac = fracPart + rightPad;
-
-  const digits = (fullInt + fullFrac).split("");
-  const dotPos = fullInt.length;
-
-  return { sign, digits, dotPos };
-}
-
-function digitsToString(sign, digits, dotPos){
-  let s = digits.join("");
-  s = s.slice(0, dotPos) + "." + s.slice(dotPos);
-
-  s = s.replace(/^0+(?=\d)/, "");
-  if (s.startsWith(".")) s = "0" + s;
-
-  s = s.replace(/(\.\d*?)0+$/, "$1");
-  s = s.replace(/\.$/, "");
-  if (s === "") s = "0";
-
-  if (sign) s = sign + s;
-  return s;
-}
-
-let __digits = null;
-function computeActiveMask(len, dotPos){
-  const digits = __digits;
-  const mask = new Array(len).fill(false);
-
-  let first = 0;
-  while (first < len && first < dotPos-1) {
-    if (digits[first] !== "0") break;
-    first++;
-  }
-  if (first >= dotPos-1) first = Math.max(0, dotPos-1);
-
-  let hasFracNonZero = false;
-  for (let i = dotPos; i < len; i++){
-    if (digits[i] !== "0"){ hasFracNonZero = true; break; }
-  }
-
-  let last;
-  if (!hasFracNonZero){
-    last = dotPos - 1;
-  } else {
-    last = len - 1;
-    while (last >= dotPos) {
-      if (digits[last] !== "0") break;
-      last--;
-    }
-    if (last < dotPos) last = dotPos;
-  }
-
-  for (let i = first; i <= last; i++) mask[i] = true;
-  return mask;
-}
-
-function getShiftSteps(){
-  return Number(slider.value);
-}
-
-function positionDot(dotIndex){
-  const leftEl = digitsRowEl.querySelector(`span[data-idx="${dotIndex - 1}"]`);
-  const rightEl = digitsRowEl.querySelector(`span[data-idx="${dotIndex}"]`);
-  if (!leftEl || !rightEl) return;
-
-  const wrapRect = numDisplayEl.getBoundingClientRect();
-  const l = leftEl.getBoundingClientRect();
-  const r = rightEl.getBoundingClientRect();
-
-  const x = ((l.right + r.left) / 2) - wrapRect.left;
-  dotEl.style.left = `${x}px`;
-}
-
-function renderStationaryDigitsAndDot(baseStr, shiftSteps){
-  const g = buildGhostDigits(baseStr);
-
-  let newDot = g.dotPos - shiftSteps;
-  newDot = Math.max(1, Math.min(g.digits.length - 1, newDot));
-
-  const rendered = digitsToString(g.sign, g.digits, newDot);
-
-  __digits = g.digits;
-  const mask = computeActiveMask(g.digits.length, newDot);
-
-  digitsRowEl.innerHTML = "";
-
-  if (g.sign){
-    const s = document.createElement("span");
-    s.className = "digit active";
-    s.textContent = g.sign;
-    digitsRowEl.appendChild(s);
-  }
-
-  for (let i = 0; i < g.digits.length; i++){
-    const sp = document.createElement("span");
-    sp.className = "digit " + (mask[i] ? "active" : "ghost");
-    sp.textContent = g.digits[i];
-    sp.dataset.idx = String(i);
-    digitsRowEl.appendChild(sp);
-  }
-
-  requestAnimationFrame(() => positionDot(newDot));
-  return { rendered };
-}
-
-// ---------- audio ----------
 function getAudioContext(){
   if (!audioCtx){
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
-  if (audioCtx.state === "suspended"){
-    audioCtx.resume();
-  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
 }
 
@@ -197,216 +284,22 @@ function playConfettiPop({ mega = false } = {}){
   const ac = getAudioContext();
   const now = ac.currentTime;
 
-  // Main short "crack"
   const osc = ac.createOscillator();
   const gain = ac.createGain();
-  const filter = ac.createBiquadFilter();
 
   osc.type = "triangle";
   osc.frequency.setValueAtTime(720, now);
   osc.frequency.exponentialRampToValueAtTime(180, now + 0.06);
 
-  filter.type = "highpass";
-  filter.frequency.setValueAtTime(180, now);
-
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.10, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(mega ? 0.12 : 0.08, now + 0.008);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ac.destination);
-
-  osc.start(now);
-  osc.stop(now + 0.1);
-
-  // Tiny noise burst for extra "snap"
-  const bufferSize = Math.floor(ac.sampleRate * 0.05);
-  const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++){
-    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-  }
-
-  const noise = ac.createBufferSource();
-  const noiseFilter = ac.createBiquadFilter();
-  const noiseGain = ac.createGain();
-
-  noise.buffer = buffer;
-  noiseFilter.type = "bandpass";
-  noiseFilter.frequency.setValueAtTime(2200, now);
-  noiseFilter.Q.value = 0.8;
-
-  noiseGain.gain.setValueAtTime(0.0001, now);
-  noiseGain.gain.exponentialRampToValueAtTime(mega ? 0.05 : 0.025, now + 0.004);
-  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(ac.destination);
-
-  noise.start(now);
-  noise.stop(now + 0.06);
-
-  // For the 10-point mega celebration: a couple of extra tiny pops
-  if (mega){
-    setTimeout(() => playConfettiPopBurst(0.75), 70);
-    setTimeout(() => playConfettiPopBurst(0.65), 140);
-  }
-}
-
-function playConfettiPopBurst(volume = 0.7){
-  const ac = getAudioContext();
-  const now = ac.currentTime;
-
-  const osc = ac.createOscillator();
-  const gain = ac.createGain();
-
-  osc.type = "square";
-  osc.frequency.setValueAtTime(520 + Math.random() * 180, now);
-  osc.frequency.exponentialRampToValueAtTime(140 + Math.random() * 60, now + 0.045);
-
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.03 * volume, now + 0.004);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
 
   osc.connect(gain);
   gain.connect(ac.destination);
 
   osc.start(now);
-  osc.stop(now + 0.055);
+  osc.stop(now + 0.1);
 }
-
-// ---------- task ----------
-function newTask(){
-  msgEl.textContent = "";
-  slider.value = 0;
-
-  const base = pickBaseNumber();
-  const n = [1,2,3,4,5][randInt(0,4)];
-  const op = (Math.random() < 0.5) ? "mul" : "div";
-
-  const targetShift = (op === "mul") ? -n : +n;
-
-  task = { base, n, op, targetShift };
-
-  const opSymbol = (op === "mul") ? "×" : "÷";
-  exprEl.textContent = `${base} ${opSymbol} ${pow10String(n)}`;
-
-  updateUI();
-}
-
-function updateUI(){
-  if (!task) return;
-
-  const shiftSteps = getShiftSteps();
-  const displayShift = -shiftSteps;
-  shiftLabel.textContent =
-    `Flytta decimalen: ${displayShift > 0 ? "+" + displayShift : displayShift} steg`;
-
-  renderStationaryDigitsAndDot(task.base, shiftSteps);
-}
-
-// ---------- confetti ----------
-function resizeConfetti(){
-  const rect = cardEl.getBoundingClientRect();
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  confettiCanvas.width = Math.floor(rect.width * dpr);
-  confettiCanvas.height = Math.floor(rect.height * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-window.addEventListener("resize", resizeConfetti);
-
-function runConfetti({ durationMs = 900, count = 140, spread = 520 } = {}){
-  resizeConfetti();
-  confettiCanvas.classList.add("on");
-
-  const rect = cardEl.getBoundingClientRect();
-  const W = rect.width, H = rect.height;
-
-  const pieces = [];
-  for (let i = 0; i < count; i++){
-    pieces.push({
-      x: W/2 + randInt(-60, 60),
-      y: H/3 + randInt(-30, 30),
-      vx: (Math.random() - 0.5) * spread,
-      vy: -Math.random() * (spread * 1.1),
-      g: 980 + Math.random()*520,
-      r: 3 + Math.random()*7,
-      a: Math.random()*Math.PI*2,
-      va: (Math.random() - 0.5) * 14
-    });
-  }
-
-  let start = null;
-  function frame(ts){
-    if (!start) start = ts;
-    const t = (ts - start) / 1000;
-
-    ctx.clearRect(0, 0, W, H);
-
-    for (const p of pieces){
-      const x = p.x + p.vx * t;
-      const y = p.y + p.vy * t + 0.5 * p.g * t * t;
-      const a = p.a + p.va * t;
-      if (y > H + 30) continue;
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(a);
-      ctx.fillStyle = `hsl(${(x*2 + y*3) % 360} 95% 60%)`;
-      ctx.fillRect(-p.r, -p.r, p.r*2.2, p.r*2.2);
-      ctx.restore();
-    }
-
-    if (ts - start < durationMs){
-      requestAnimationFrame(frame);
-    } else {
-      ctx.clearRect(0, 0, W, H);
-      confettiCanvas.classList.remove("on");
-    }
-  }
-  requestAnimationFrame(frame);
-}
-
-// ---------- answer ----------
-function lockAnswer(){
-  if (!task) return;
-
-  const shiftSteps = getShiftSteps();
-
-  if (shiftSteps === task.targetShift){
-    score += 1;
-    renderScore();
-
-    const result = renderStationaryDigitsAndDot(task.base, shiftSteps).rendered;
-    msgEl.textContent = `✅ ${result}  (+1)`;
-
-    const mega = (score === 10);
-    playConfettiPop({ mega });
-
-    if (mega){
-      runConfetti({ durationMs: 1800, count: 360, spread: 980 });
-      setTimeout(() => runConfetti({ durationMs: 1400, count: 260, spread: 1100 }), 220);
-      setTimeout(() => runConfetti({ durationMs: 1200, count: 220, spread: 900 }), 520);
-    } else {
-      runConfetti({ durationMs: 900, count: 160, spread: 620 });
-    }
-
-    setTimeout(newTask, 700);
-  } else {
-    score = Math.max(0, score - 5);
-    renderScore();
-    msgEl.textContent = "";
-    flashPenalty("-5");
-  }
-}
-
-// events
-slider.addEventListener("input", updateUI);
-lockBtn.addEventListener("click", lockAnswer);
-
-// start
-renderScore();
-newTask();
-</script>
+</body>
+</html>

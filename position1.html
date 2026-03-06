@@ -265,7 +265,7 @@
       <div class="scoreBox" id="scoreBox">Poäng: 0</div>
       <span style="color:#45f73b">Rätt: +1 poäng,</span>
       <span style="color:#ff3333">Fel: −5 poäng.</span>
-      <br /><br /><b><span style="color:#ffee33">Kan du få 10 poäng så fixar du detta!</span></b>
+      <br /><br /><b><span style="color:#ffee33">Kan du få 20 poäng så fixar du detta!</span></b>
     </div>
   </div>
 </div>
@@ -321,8 +321,9 @@ function pow10String(n){ return "1" + "0".repeat(n); }
 
 function renderScore(){
   scoreBox.textContent = `Poäng: ${score}`;
+  shiftLabel.style.display = (score >= 10) ? "none" : "";
 }
-
+	
 function flashPenalty(text){
   penaltyFlashEl.textContent = text;
   penaltyFlashEl.classList.remove("show");

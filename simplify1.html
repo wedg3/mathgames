@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Förenkla uttryck</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.4/math.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.2.0"></script>
+
+  <style>
+    body {
+      font-family: Consolas, Monaco, monospace;
+      text-align: center;
+      background-color: black;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      margin: auto;
+      
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+	  
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #bdbdbd;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+	  display:none;
+    }
+
+    #reset-button {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 16px;
+      width: 220px;
+      background-color: #04AA6D;
+      letter-spacing: 3px;
+      color: white;
+      border: 2px solid white;
+      padding: 6px;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+
+    #reset-button:hover {
+      border: 2px solid black;
+      color: black;
+    }
+
+    .problem-box {
+      margin: 10px auto 8px auto;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #bbbbbb;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    #expression {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      min-height: 32px;
+      margin-bottom: 14px;
+    }
+
+    #feedback {
+      min-height: 24px;
+      font-size: 18px;
+      margin-bottom: 8px;
+	  display:none;
+    }
+
+    .feedback-good { color: #7dff7d; }
+    .feedback-more { color: gold; }
+    .feedback-bad  { color: #ff7b7b; }
+
+    .input-wrap {
+      width: 260px;
+      margin: 0 auto 14px auto;
+    }
+
+   #input-expression {
+  width: 100%;
+  font-size: 30px;
+  padding: 10px 12px;
+  text-align: center;
+  box-sizing: border-box;
+  font-family: Consolas, Monaco, monospace;
+  letter-spacing:2px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #ffd84d;
+
+  box-shadow: none;
+  transition:
+    color 0.15s ease,
+    text-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+#input-expression::placeholder {
+  color: rgba(50, 50, 50, 1);
+  font-size:20px;
+}
+
+#input-expression.neutral {
+  border: none;
+  background: transparent;
+  color: #ffd84d;
+  box-shadow: none;
+
+}
+
+#input-expression.bad {
+  border: none;
+  background: transparent;
+  color: #ffd84d;
+  box-shadow: none;
+  text-shadow:
+    0 0 6px rgba(255, 216, 77, 0.35),
+    0 0 12px rgba(255, 216, 77, 0.15);
+}
+
+#input-expression.partial {
+  border: none;
+  background: transparent;
+  color: #ffd84d;
+  box-shadow: none;
+  text-shadow:
+    0 0 6px rgba(255, 216, 77, 0.45),
+    0 0 14px rgba(255, 216, 77, 0.2);
+}
+
+#input-expression.good {
+  border: none;
+  background: transparent;
+  color: #b8ffb8;
+  box-shadow: none;
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(140, 255, 140, 0.95),
+    0 0 22px rgba(120, 255, 120, 0.9),
+    0 0 34px rgba(80, 255, 180, 0.75),
+    0 0 48px rgba(80, 220, 255, 0.65),
+    0 0 72px rgba(80, 220, 255, 0.45);
+}
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      width: 260px;
+      margin: 0 auto;
+    }
+
+    .small-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      width: 260px;
+      margin: 7px auto 0 auto;
+    }
+
+    .numbutton,
+    .symbutton,
+    .delbutton {
+      padding: 12px 6px;
+      font-size: 22px;
+      cursor: pointer;
+      border: 0;
+      font-family: Consolas, Monaco, monospace;
+      transition: background-color 0.12s ease, color 0.12s ease, transform 0.06s ease;
+    }
+
+    .numbutton:active,
+    .symbutton:active,
+    .delbutton:active {
+      transform: scale(0.97);
+    }
+
+    .numbutton {
+      background: white;
+      color: black;
+    }
+
+    .symbutton {
+      background: #73deb7;
+      color: black;
+    }
+
+    .delbutton {
+      background: pink;
+      color: black;
+      font-size: 14px;
+    }
+
+    .numbutton:hover,
+    .symbutton:hover,
+    .delbutton:hover {
+      background-color: #04AA6D;
+      color: white;
+    }
+
+    #score {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 20px;
+      color: white;
+    }
+
+    .tiny {
+      font-size: 11px;
+      color: #bdbdbd;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+	
+
+	
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Förenkla uttrycket</h1>
+    <div class="subtitle">skriv det förenklade uttrycket</div>
+
+    <button id="reset-button">NY UPPGIFT</button>
+
+    <div class="problem-box">
+   
+      <div id="expression"></div>
+      <div id="feedback"></div>
+    </div>
+
+    <div class="input-wrap">
+      <input type="text" id="input-expression" class="neutral" placeholder="skriv här" autocomplete="off" />
+    </div>
+
+<div class="button-grid">
+  <button class="numbutton" onclick="appendValue('7')">7</button>
+  <button class="numbutton" onclick="appendValue('8')">8</button>
+  <button class="numbutton" onclick="appendValue('9')">9</button>
+      <button class="delbutton" onclick="backspaceInput()">←</button>
+  
+
+  <button class="numbutton" onclick="appendValue('4')">4</button>
+  <button class="numbutton" onclick="appendValue('5')">5</button>
+  <button class="numbutton" onclick="appendValue('6')">6</button>
+       <button class="symbutton" onclick="appendValue('+')">+</button>
+   
+  <button class="numbutton" onclick="appendValue('1')">1</button>
+  <button class="numbutton" onclick="appendValue('2')">2</button>
+  <button class="numbutton" onclick="appendValue('3')">3</button>
+     <button class="symbutton"  id="minus" onclick="appendValue('-')">-</button>
+
+ 
+    <button class="symbutton" onclick="appendValue('x')">x</button>
+	  <button class="numbutton" onclick="appendValue('0')">0</button>
+  <button class="symbutton" onclick="appendValue('y')">y</button>
+    <button class="symbutton" onclick="appendValue('²')">²</button>
+		
+
+
+
+</div>
+
+
+  </div>
+
+  <div id="score">
+    Poäng: <span id="score-value">0</span>
+  </div>
+
+  <script>
+    const expressionEl = document.getElementById("expression");
+    const inputEl = document.getElementById("input-expression");
+    const feedbackEl = document.getElementById("feedback");
+    const resetButton = document.getElementById("reset-button");
+    const scoreValueEl = document.getElementById("score-value");
+	
+	const successSound = new Audio("assets/am1.mp3");
+successSound.preload = "auto";
+
+
+    let score = 0;
+    let currentDisplay = "";
+    let currentPoly = null;
+    let targetPoly = null;
+    let solvedThisRound = false;
+    let solveTimeout = null;
+    let lastState = "";
+
+    function key(expX, expY) {
+      return `${expX},${expY}`;
+    }
+
+    function cleanPoly(poly) {
+      const out = {};
+      for (const k in poly) {
+        if (Math.abs(poly[k]) > 1e-9) out[k] = Math.round(poly[k]);
+      }
+      return out;
+    }
+
+    function clonePoly(poly) {
+      return { ...poly };
+    }
+
+    function addPoly(a, b) {
+      const out = clonePoly(a);
+      for (const k in b) out[k] = (out[k] || 0) + b[k];
+      return cleanPoly(out);
+    }
+
+    function scalePoly(a, n) {
+      const out = {};
+      for (const k in a) out[k] = a[k] * n;
+      return cleanPoly(out);
+    }
+
+    function mulPoly(a, b) {
+      const out = {};
+      for (const ka in a) {
+        for (const kb in b) {
+          const [ax, ay] = ka.split(",").map(Number);
+          const [bx, by] = kb.split(",").map(Number);
+          const nx = ax + bx;
+          const ny = ay + by;
+          if (nx > 2 || ny > 2) continue;
+          const k = key(nx, ny);
+          out[k] = (out[k] || 0) + a[ka] * b[kb];
+        }
+      }
+      return cleanPoly(out);
+    }
+
+    function polyEquals(a, b) {
+      const aa = cleanPoly(a || {});
+      const bb = cleanPoly(b || {});
+      const keys = new Set([...Object.keys(aa), ...Object.keys(bb)]);
+      for (const k of keys) {
+        if ((aa[k] || 0) !== (bb[k] || 0)) return false;
+      }
+      return true;
+    }
+
+    function termString(coeff, expX, expY, first) {
+      const abs = Math.abs(coeff);
+      let variablePart = "";
+
+      if (expX === 2) variablePart += "x²";
+      else if (expX === 1) variablePart += "x";
+
+      if (expY === 2) variablePart += "y²";
+      else if (expY === 1) variablePart += "y";
+
+      let coeffPart = "";
+      if (variablePart === "") {
+        coeffPart = String(abs);
+      } else {
+        coeffPart = abs === 1 ? "" : String(abs);
+      }
+
+      const core = coeffPart + variablePart;
+
+      if (first) return coeff < 0 ? "-" + core : core;
+      return coeff < 0 ? " - " + core : " + " + core;
+    }
+
+    function formatPoly(poly) {
+      const order = [
+        [2,0], // x²
+        [1,1], // xy
+        [0,2], // y²
+        [1,0], // x
+        [0,1], // y
+        [0,0]  // constant
+      ];
+
+      let result = "";
+      let first = true;
+
+      for (const [ex, ey] of order) {
+        const coeff = poly[key(ex, ey)] || 0;
+        if (coeff !== 0) {
+          result += termString(coeff, ex, ey, first);
+          first = false;
+        }
+      }
+
+      return result || "0";
+    }
+
+    function preprocessExpression(expr) {
+      let s = expr.replace(/\s+/g, "");
+      s = s.replace(/²/g, "^2");
+
+      s = s.replace(/(\d)([xy(])/g, "$1*$2");
+      s = s.replace(/([xy])([xy])/g, "$1*$2");
+      s = s.replace(/([xy])(\()/g, "$1*$2");
+      s = s.replace(/(\))([xy\d])/g, "$1*$2");
+
+      return s;
+    }
+
+    function expressionToPoly(expr) {
+      try {
+        const prepared = preprocessExpression(expr);
+
+        const samples = [
+          [0,0],
+          [1,0],
+          [0,1],
+          [1,1],
+          [2,0],
+          [0,2]
+        ];
+
+        const A = samples.map(([x,y]) => [x*x, x*y, y*y, x, y, 1]);
+        const b = samples.map(([x,y]) => {
+          const val = math.evaluate(prepared, { x, y });
+          if (!isFinite(val)) throw new Error("Bad value");
+          return val;
+        });
+
+        const solution = math.lusolve(A, b).map(v => v[0]);
+        const rounded = solution.map(v =>
+          Math.abs(v - Math.round(v)) < 1e-8 ? Math.round(v) : v
+        );
+
+        const extraTests = [
+          [2,1],
+          [1,2],
+          [-1,1],
+          [3,-1]
+        ];
+
+        for (const [x,y] of extraTests) {
+          const actual = math.evaluate(prepared, { x, y });
+          const predicted =
+            rounded[0]*x*x +
+            rounded[1]*x*y +
+            rounded[2]*y*y +
+            rounded[3]*x +
+            rounded[4]*y +
+            rounded[5];
+
+          if (Math.abs(actual - predicted) > 1e-6) return null;
+        }
+
+        return cleanPoly({
+          [key(2,0)]: rounded[0],
+          [key(1,1)]: rounded[1],
+          [key(0,2)]: rounded[2],
+          [key(1,0)]: rounded[3],
+          [key(0,1)]: rounded[4],
+          [key(0,0)]: rounded[5]
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function monoPoly(v) {
+      if (v === "x") return { [key(1,0)]: 1 };
+      if (v === "y") return { [key(0,1)]: 1 };
+      return { [key(0,0)]: v };
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function nonZeroInt(min, max) {
+      let n = 0;
+      while (n === 0) n = randomInt(min, max);
+      return n;
+    }
+
+    function exprFromLinear(a, v, b) {
+      let first = "";
+      if (a === 1) first = v;
+      else if (a === -1) first = "-" + v;
+      else first = `${a}${v}`;
+
+      if (b === 0) return first;
+      if (b > 0) return `${first}+${b}`;
+      return `${first}${b}`;
+    }
+
+    function generateProblem() {
+  const type = randomInt(1, 7);
+  let display = "";
+  let startPoly = {};
+
+  function mostlyPositiveNonZero() {
+    return nonZeroInt(1, 5);
+  }
+
+  function oneMaybeNegativeNonZero() {
+    return Math.random() < 0.35 ? -randomInt(1, 5) : randomInt(1, 5);
+  }
+
+  if (type === 1) {
+    // a + (bx + c)
+    const a = mostlyPositiveNonZero();
+    const b = oneMaybeNegativeNonZero();
+    const c = randomInt(1, 5); // keep constant in parenthesis positive here
+    const v = Math.random() < 0.75 ? "x" : "y";
+
+    display = `${a}+(${exprFromLinear(b, v, c)})`;
+    startPoly = addPoly(
+      monoPoly(a),
+      addPoly(scalePoly(monoPoly(v), b), monoPoly(c))
+    );
+  }
+
+  if (type === 2) {
+    // a - (bx + c) or a - (bx - c)
+    const a = mostlyPositiveNonZero();
+    const b = oneMaybeNegativeNonZero();
+    const c = randomInt(1, 5); // non-zero
+    const cSigned = Math.random() < 0.3 ? -c : c; // at most one likely negative inside
+    const v = Math.random() < 0.75 ? "x" : "y";
+
+    display = `${a}-(${exprFromLinear(b, v, cSigned)})`;
+    startPoly = addPoly(
+      monoPoly(a),
+      scalePoly(addPoly(scalePoly(monoPoly(v), b), monoPoly(cSigned)), -1)
+    );
+  }
+
+  if (type === 3) {
+    // a(bx + c)
+    const a = randomInt(2, 5);
+    const b = oneMaybeNegativeNonZero();
+    const c = randomInt(1, 5); // no zero constant
+    const v = Math.random() < 0.75 ? "x" : "y";
+
+    display = `${a}(${exprFromLinear(b, v, c)})`;
+    startPoly = scalePoly(
+      addPoly(scalePoly(monoPoly(v), b), monoPoly(c)),
+      a
+    );
+  }
+
+  if (type === 4) {
+    const c = oneMaybeNegativeNonZero();
+    display = `x(x${c > 0 ? "+" + c : c})`;
+    startPoly = mulPoly(monoPoly("x"), addPoly(monoPoly("x"), monoPoly(c)));
+  }
+
+  if (type === 5) {
+    const c = oneMaybeNegativeNonZero();
+    display = `x(y${c > 0 ? "+" + c : c})`;
+    startPoly = mulPoly(monoPoly("x"), addPoly(monoPoly("y"), monoPoly(c)));
+  }
+
+  if (type === 6) {
+    const c = oneMaybeNegativeNonZero();
+    display = `y(x${c > 0 ? "+" + c : c})`;
+    startPoly = mulPoly(monoPoly("y"), addPoly(monoPoly("x"), monoPoly(c)));
+  }
+
+  if (type === 7) {
+    const c = oneMaybeNegativeNonZero();
+    display = `y(y${c > 0 ? "+" + c : c})`;
+    startPoly = mulPoly(monoPoly("y"), addPoly(monoPoly("y"), monoPoly(c)));
+  }
+
+  return {
+    display,
+    startPoly: cleanPoly(startPoly),
+    finalPoly: cleanPoly(startPoly)
+  };
+}
+    function triggerConfetti() {
+      confetti({
+        particleCount: 180,
+        spread: 90,
+        colors: ['#FF0000', '#00FF00', '#0000FF']
+      });
+    }
+
+    function playSuccessSound() {
+  try {
+    successSound.currentTime = 0;
+    successSound.play();
+  } catch (e) {}
+}
+
+    function setFeedback(text, type) {
+      feedbackEl.textContent = text;
+      feedbackEl.className = "";
+      if (type === "good") feedbackEl.classList.add("feedback-good");
+      if (type === "more") feedbackEl.classList.add("feedback-more");
+      if (type === "bad") feedbackEl.classList.add("feedback-bad");
+    }
+
+    function setInputState(state) {
+      inputEl.classList.remove("neutral", "bad", "partial", "good");
+      inputEl.classList.add(state);
+    }
+
+    function clearSolveTimeout() {
+      if (solveTimeout) {
+        clearTimeout(solveTimeout);
+        solveTimeout = null;
+      }
+    }
+
+    function newProblem() {
+      clearSolveTimeout();
+      solvedThisRound = false;
+      lastState = "";
+
+      const p = generateProblem();
+      currentDisplay = p.display;
+      currentPoly = p.startPoly;
+      targetPoly = p.finalPoly;
+
+      expressionEl.textContent = currentDisplay;
+      inputEl.value = "";
+      setFeedback("", "");
+      setInputState("neutral");
+      inputEl.focus();
+    }
+
+    function completeRound() {
+      if (solvedThisRound) return;
+      solvedThisRound = true;
+
+      score++;
+      scoreValueEl.textContent = score;
+      triggerConfetti();
+
+      setTimeout(() => {
+        newProblem();
+      }, 850);
+    }
+
+    function checkInputLive() {
+      if (solvedThisRound) return;
+
+      clearSolveTimeout();
+
+      const answer = inputEl.value.trim();
+
+      if (!answer) {
+        setFeedback("", "");
+        setInputState("neutral");
+        lastState = "neutral";
+        return;
+      }
+
+      const userPoly = expressionToPoly(answer);
+
+      if (!userPoly) {
+        setFeedback("Try again.", "bad");
+        setInputState("bad");
+        lastState = "bad";
+        return;
+      }
+
+      if (!polyEquals(userPoly, currentPoly)) {
+        setFeedback("Try again.", "bad");
+        setInputState("bad");
+        lastState = "bad";
+        return;
+      }
+
+      if (polyEquals(userPoly, targetPoly)) {
+        setFeedback("Good job!", "good");
+        setInputState("good");
+
+        if (lastState !== "good") {
+          playSuccessSound();
+        }
+
+        lastState = "good";
+
+        solveTimeout = setTimeout(() => {
+          completeRound();
+        }, 700);
+
+      } else {
+        setFeedback("Further simplification is possible.", "more");
+        setInputState("partial");
+        lastState = "partial";
+      }
+    }
+
+    function appendValue(value) {
+      if (solvedThisRound) return;
+      inputEl.value += value;
+      checkInputLive();
+      inputEl.focus();
+    }
+
+    function clearInput() {
+      if (solvedThisRound) return;
+      inputEl.value = "";
+      checkInputLive();
+      inputEl.focus();
+    }
+
+    function backspaceInput() {
+      if (solvedThisRound) return;
+      inputEl.value = inputEl.value.slice(0, -1);
+      checkInputLive();
+      inputEl.focus();
+    }
+
+    resetButton.addEventListener("click", newProblem);
+
+    inputEl.addEventListener("input", checkInputLive);
+
+    newProblem();
+  </script>
+</body>
+</html>

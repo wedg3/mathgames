@@ -732,7 +732,11 @@ successSound.preload = "auto";
       inputEl.focus();
     }
 
-    resetButton.addEventListener("click", newProblem);
+    resetButton.addEventListener("click", () => {
+  score = Math.max(0, score - 3);
+  scoreValueEl.textContent = score;
+  newProblem();
+});
 
     inputEl.addEventListener("input", checkInputLive);
 

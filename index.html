@@ -42,6 +42,19 @@
         .log-container { position: fixed; bottom: 20px; right: 20px; width: 220px; background-color: rgba(0, 0, 0, 0.3); padding: 5px; border: 1px solid white; overflow-y: auto; max-height: 100%; }
         .log-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
         .log-entry { font-size: 16px; margin-bottom: 0px; margin-top: 0px;}
+
+
+		#bottom-message {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
     </style>
 	
 	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.2.0"></script>
@@ -97,6 +110,8 @@
         <div class="log-title">Mina Steg</div>
         <div id="log-entries"></div>
     </div>
+
+	<div id="bottom-message">Om du klarar 15 poäng så behärskar du det här.</div>
 <div id="score" style="position: fixed; bottom: 20px; left: 20px; font-size: 20px; color: white;">
     Poäng: <span id="score-value">0</span>
 </div>

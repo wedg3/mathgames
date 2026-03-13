@@ -57,13 +57,12 @@
     }
 
     #expression {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: bold;
-      letter-spacing: 1px;
-      min-height: 44px;
-      margin-bottom: 14px;
-      line-height: 1.5;
-      padding: 0 8px;
+      letter-spacing: 2.5px;
+       
+      line-height: 1;
+      padding: 4px 4px;
     }
 
     .expr-plain {
@@ -73,44 +72,39 @@
 
 .term-chip {
   display: inline-block;
-  padding: 0px 6px;
-  margin: 2px 2px;
+  padding: 2px 1px;
+  margin: 0px 1px;
   border: 0px solid white;
-  border-radius: 6px;
+  border-radius: 0px;
   box-sizing: border-box;
   color: white;
-  box-shadow: 0 0 8px rgba(255,255,255,0.12);
-  min-height: 20px;
+
+  min-height: 10px;
 }
 
 .chip-x2 {
   border-color: #33cfff;
-  background: rgba(0, 200, 255, 0.20);
+  background: rgba(255, 179, 186, 0.6);
 }
-
 .chip-xy {
   border-color: #ffe100;
-  background: rgba(255, 225, 0, 0.20);
+  background: rgba(255, 223, 186, 0.6);
 }
-
 .chip-y2 {
   border-color: #cc4dff;
-  background: rgba(200, 60, 255, 0.20);
+  background: rgba(255, 255, 186, 0.6);
 }
-
 .chip-x {
   border-color: #39ff14;
-  background: rgba(57, 255, 20, 0.20);
+  background: rgba(186, 255, 201, 0.6);
 }
-
 .chip-y {
   border-color: #ff5a36;
-  background: rgba(255, 90, 54, 0.20);
+  background: rgba(186, 225, 255, 0.6);
 }
-
 .chip-c {
   border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.20);
+  background: rgba(220, 198, 255, 0.6);
 }
 
     #feedback {
@@ -181,7 +175,7 @@
     #input-expression.good {
       border: none;
       background: transparent;
-      color: #b8ffb8;
+      color: #ffffff;
       box-shadow: none;
       text-shadow:
         0 0 6px rgba(255, 255, 255, 0.85),
@@ -264,6 +258,25 @@
       font-size: 20px;
       color: white;
     }
+	
+	#bottom-message {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#expression-hint {
+  font-size: 11px;
+  color: #bdbdbd;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
   </style>
 </head>
 <body>
@@ -272,7 +285,10 @@
 
     <button id="reset-button">NY UPPGIFT (-3p)</button>
 
+
+
     <div class="problem-box">
+	<div id="expression-hint">Hur många av varje?</div>
       <div id="expression"></div>
       <div id="feedback"></div>
     </div>
@@ -309,6 +325,8 @@
       <button class="symbutton3" onclick="appendValue('²')">²</button>
     </div>
   </div>
+  
+  <div id="bottom-message">Om du får 15 poäng så behärskar du det här.</div>
 
   <div id="score">
     Poäng: <span id="score-value">0</span>
@@ -655,54 +673,54 @@
     }
 
     function generateProblem() {
-	  while (true) {
-		const targetPoly = {};
-		const categories = shuffle(MONOMIALS).slice(0, randomInt(3, 5));
+		  while (true) {
+			const targetPoly = {};
+			const categories = shuffle(MONOMIALS).slice(0, randomInt(2, 4));
 
-		for (const m of categories) {
-		  targetPoly[key(m.ex, m.ey)] = biasedCoeff();
-		}
+			for (const m of categories) {
+			  targetPoly[key(m.ex, m.ey)] = biasedCoeff();
+			}
 
-		const terms = [];
-		let forcedSplitDone = false;
+			const terms = [];
+			let forcedSplitDone = false;
 
-		for (const m of categories) {
-		  const total = targetPoly[key(m.ex, m.ey)];
-		  let pieces = 1;
+			for (const m of categories) {
+			  const total = targetPoly[key(m.ex, m.ey)];
+			  let pieces = 1;
 
-		  if (!forcedSplitDone) {
-			pieces = randomInt(2, 3);
-			forcedSplitDone = true;
-		  } else if (Math.random() < 0.6) {
-			pieces = randomInt(2, 3);
+			  if (!forcedSplitDone && Math.random() < 0.75) {
+				pieces = 2;
+				forcedSplitDone = true;
+			  } else if (Math.random() < 0.35) {
+				pieces = 2;
+			  }
+
+			  const split = splitCoefficient(total, pieces);
+
+			  split.forEach(v => {
+				terms.push({
+				  coeff: v,
+				  ex: m.ex,
+				  ey: m.ey
+				});
+			  });
+			}
+
+			if (terms.length < 3 || terms.length > 8) continue;
+
+			const shuffled = shuffle(terms);
+
+			const termsWithText = shuffled.map((t, i) => ({
+			  ...t,
+			  text: coeffToTermText(t.coeff, t.ex, t.ey, i === 0)
+			}));
+
+			return {
+			  displayTerms: termsWithText,
+			  finalPoly: cleanPoly(targetPoly)
+			};
 		  }
-
-		  const split = splitCoefficient(total, pieces);
-
-		  split.forEach(v => {
-			terms.push({
-			  coeff: v,
-			  ex: m.ex,
-			  ey: m.ey
-			});
-		  });
 		}
-
-		if (terms.length < 4 || terms.length > 10) continue;
-
-		const shuffled = shuffle(terms);
-
-		const termsWithText = shuffled.map((t, i) => ({
-		  ...t,
-		  text: coeffToTermText(t.coeff, t.ex, t.ey, i === 0)
-		}));
-
-		return {
-		  displayTerms: termsWithText,
-		  finalPoly: cleanPoly(targetPoly)
-		};
-	  }
-	}
 
     function triggerConfetti() {
       confetti({
@@ -731,7 +749,7 @@
     }
 
     function renderExpression() {
-      const showHelpers = score < 10;
+      const showHelpers = score < 5;
       expressionEl.innerHTML = buildDisplayHTML(currentTerms, showHelpers);
     }
 

@@ -59,7 +59,7 @@
 
     .problem-box {
       margin: 10px auto 8px auto;
-      min-height: 70px;
+      min-height: 35px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -94,33 +94,37 @@
 
     .input-wrap {
       width: 260px;
-      margin: 0 auto 14px auto;
+      margin: 0 auto 0 auto;
     }
 
    #input-expression {
-  width: 100%;
-  font-size: 30px;
-  padding: 10px 12px;
-  text-align: center;
-  box-sizing: border-box;
-  font-family: Consolas, Monaco, monospace;
-  letter-spacing:2px;
+	  width: 100%;
+	  font-size: 30px;
+	  padding: 10px 32px;
+	  text-align: center;
+	  
+	  box-sizing: border-box;
+	  font-family: Consolas, Monaco, monospace;
+	  letter-spacing:2px;
+	  border: none;
+	  outline: none;
+	  background: transparent;
+	  color: #ffd84d;
+	  box-shadow: none;
+	  transition:
+		color 0.15s ease,
+		text-shadow 0.15s ease,
+		background-color 0.15s ease;
+		
 
-  border: none;
-  outline: none;
-  background: transparent;
-  color: #ffd84d;
-
-  box-shadow: none;
-  transition:
-    color 0.15s ease,
-    text-shadow 0.15s ease,
-    background-color 0.15s ease;
-}
+	}
 
 #input-expression::placeholder {
   color: rgba(50, 50, 50, 1);
   font-size:20px;
+  
+    line-height: 48px;
+	
 }
 
 #input-expression.neutral {
@@ -128,7 +132,6 @@
   background: transparent;
   color: #ffd84d;
   box-shadow: none;
-
 }
 
 #input-expression.bad {
@@ -169,8 +172,9 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 7px;
-      width: 260px;
+      width: 220px;
       margin: 0 auto;
+	  height: 160px;
     }
 
     .small-grid {
@@ -183,8 +187,10 @@
 
     .numbutton,
     .symbutton,
-    .delbutton {
-      padding: 12px 6px;
+	.symbutton2,
+	.symbutton3,
+	.delbutton {
+      padding: 10px 6px;
       font-size: 22px;
       cursor: pointer;
       border: 0;
@@ -194,6 +200,8 @@
 
     .numbutton:active,
     .symbutton:active,
+	.symbutton2:active,
+	.symbutton3,
     .delbutton:active {
       transform: scale(0.97);
     }
@@ -204,7 +212,17 @@
     }
 
     .symbutton {
+      background: #faea7f;
+      color: black;
+    }
+	
+	.symbutton2 {
       background: #73deb7;
+      color: black;
+    }
+	
+	.symbutton3 {
+      background: #c0e6f0;
       color: black;
     }
 
@@ -216,6 +234,8 @@
 
     .numbutton:hover,
     .symbutton:hover,
+	.symbutton2:hover,
+	.symbutton3:hover,
     .delbutton:hover {
       background-color: #04AA6D;
       color: white;
@@ -267,18 +287,18 @@
   <button class="numbutton" onclick="appendValue('4')">4</button>
   <button class="numbutton" onclick="appendValue('5')">5</button>
   <button class="numbutton" onclick="appendValue('6')">6</button>
-       <button class="symbutton" onclick="appendValue('+')">+</button>
+       <button class="symbutton2" onclick="appendValue('+')">+</button>
    
   <button class="numbutton" onclick="appendValue('1')">1</button>
   <button class="numbutton" onclick="appendValue('2')">2</button>
   <button class="numbutton" onclick="appendValue('3')">3</button>
-     <button class="symbutton"  id="minus" onclick="appendValue('-')">-</button>
+     <button class="symbutton2"  id="minus" onclick="appendValue('-')">-</button>
 
  
     <button class="symbutton" onclick="appendValue('x')">x</button>
 	  <button class="numbutton" onclick="appendValue('0')">0</button>
   <button class="symbutton" onclick="appendValue('y')">y</button>
-    <button class="symbutton" onclick="appendValue('²')">²</button>
+    <button class="symbutton3" onclick="appendValue('²')">²</button>
 		
 
 
@@ -299,8 +319,11 @@
     const resetButton = document.getElementById("reset-button");
     const scoreValueEl = document.getElementById("score-value");
 	
-	const successSound = new Audio("assets/am1.mp3");
-successSound.preload = "auto";
+	const successSounds = [
+	  new Audio("am1.mp3"),
+	  new Audio("am2.mp3"),
+	  new Audio("am3.mp3")
+	];
 
 
     let score = 0;
@@ -603,11 +626,10 @@ successSound.preload = "auto";
       });
     }
 
-    function playSuccessSound() {
-  try {
-    successSound.currentTime = 0;
-    successSound.play();
-  } catch (e) {}
+function playSuccessSound() {
+  const sound = successSounds[Math.floor(Math.random() * successSounds.length)];
+  sound.currentTime = 0;
+  sound.play();
 }
 
     function setFeedback(text, type) {
@@ -648,17 +670,20 @@ successSound.preload = "auto";
     }
 
     function completeRound() {
-      if (solvedThisRound) return;
-      solvedThisRound = true;
+	  if (solvedThisRound) return;
+	  solvedThisRound = true;
 
-      score++;
-      scoreValueEl.textContent = score;
-      triggerConfetti();
+	  score++;
+	  scoreValueEl.textContent = score;
 
-      setTimeout(() => {
-        newProblem();
-      }, 850);
-    }
+	  if (score % 10 === 0) {
+		triggerConfetti();
+	  }
+
+	  setTimeout(() => {
+		newProblem();
+	  }, 850);
+	}
 
     function checkInputLive() {
       if (solvedThisRound) return;

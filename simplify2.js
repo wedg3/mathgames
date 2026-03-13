@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Förenkla uttryck</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.4/math.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.2.0"></script>
+
+  <style>
+    body {
+      font-family: Consolas, Monaco, monospace;
+      text-align: center;
+      background-color: black;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+
+    #reset-button {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 16px;
+      width: 200px;
+      background-color: #04AA6D;
+      letter-spacing: 2px;
+      color: white;
+      border: 1px solid white;
+      padding: 4px;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+
+    #reset-button:hover {
+      border: 2px solid black;
+      color: black;
+    }
+
+    .problem-box {
+      margin: 10px auto 8px auto;
+      min-height: 58px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #expression {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      min-height: 44px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+      padding: 0 8px;
+    }
+
+    .expr-plain {
+      white-space: normal;
+      word-break: break-word;
+    }
+
+.term-chip {
+  display: inline-block;
+  padding: 0px 6px;
+  margin: 2px 2px;
+  border: 0px solid white;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: white;
+  box-shadow: 0 0 8px rgba(255,255,255,0.12);
+  min-height: 20px;
+}
+
+.chip-x2 {
+  border-color: #33cfff;
+  background: rgba(0, 200, 255, 0.20);
+}
+
+.chip-xy {
+  border-color: #ffe100;
+  background: rgba(255, 225, 0, 0.20);
+}
+
+.chip-y2 {
+  border-color: #cc4dff;
+  background: rgba(200, 60, 255, 0.20);
+}
+
+.chip-x {
+  border-color: #39ff14;
+  background: rgba(57, 255, 20, 0.20);
+}
+
+.chip-y {
+  border-color: #ff5a36;
+  background: rgba(255, 90, 54, 0.20);
+}
+
+.chip-c {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.20);
+}
+
+    #feedback {
+      min-height: 24px;
+      font-size: 18px;
+      margin-bottom: 8px;
+      display: none;
+    }
+
+    .input-wrap {
+      width: 100%;
+      margin: 0 auto 0 auto;
+    }
+
+    #input-expression {
+      width: 100%;
+      font-size: 30px;
+      padding: 10px 32px;
+      text-align: center;
+      box-sizing: border-box;
+      font-family: Consolas, Monaco, monospace;
+      letter-spacing: 2px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #ffd84d;
+      box-shadow: none;
+      transition:
+        color 0.15s ease,
+        text-shadow 0.15s ease,
+        background-color 0.15s ease;
+    }
+
+    #input-expression::placeholder {
+      color: rgba(50, 50, 50, 1);
+      font-size: 20px;
+      line-height: 48px;
+    }
+
+    #input-expression.neutral {
+      border: none;
+      background: transparent;
+      color: #ffd84d;
+      box-shadow: none;
+      text-shadow: none;
+    }
+
+    #input-expression.bad {
+      border: none;
+      background: transparent;
+      color: #ffd84d;
+      box-shadow: none;
+      text-shadow:
+        0 0 6px rgba(255, 216, 77, 0.35),
+        0 0 12px rgba(255, 216, 77, 0.15);
+    }
+
+    #input-expression.partial {
+      border: none;
+      background: transparent;
+      color: #ffd84d;
+      box-shadow: none;
+      text-shadow:
+        0 0 6px rgba(255, 216, 77, 0.45),
+        0 0 14px rgba(255, 216, 77, 0.2);
+    }
+
+    #input-expression.good {
+      border: none;
+      background: transparent;
+      color: #b8ffb8;
+      box-shadow: none;
+      text-shadow:
+        0 0 6px rgba(255, 255, 255, 0.85),
+        0 0 12px rgba(140, 255, 140, 0.95),
+        0 0 16px rgba(120, 255, 120, 0.9),
+        0 0 18px rgba(80, 255, 180, 0.75),
+        0 0 20px rgba(80, 220, 255, 0.65),
+        0 0 22px rgba(80, 220, 255, 0.45);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      width: 220px;
+      margin: 0 auto;
+      height: 160px;
+    }
+
+    .numbutton,
+    .symbutton,
+    .symbutton2,
+    .symbutton3,
+    .delbutton {
+      padding: 10px 6px;
+      font-size: 22px;
+      cursor: pointer;
+      border: 0;
+      font-family: Consolas, Monaco, monospace;
+      transition: background-color 0.12s ease, color 0.12s ease, transform 0.06s ease;
+    }
+
+    .numbutton:active,
+    .symbutton:active,
+    .symbutton2:active,
+    .symbutton3:active,
+    .delbutton:active {
+      transform: scale(0.97);
+    }
+
+    .numbutton {
+      background: white;
+      color: black;
+    }
+
+    .symbutton {
+      background: #faea7f;
+      color: black;
+    }
+
+    .symbutton2 {
+      background: #73deb7;
+      color: black;
+    }
+
+    .symbutton3 {
+      background: #c0e6f0;
+      color: black;
+    }
+
+    .delbutton {
+      background: pink;
+      color: black;
+      font-size: 14px;
+    }
+
+    .numbutton:hover,
+    .symbutton:hover,
+    .symbutton2:hover,
+    .symbutton3:hover,
+    .delbutton:hover {
+      background-color: #04AA6D;
+      color: white;
+    }
+
+    #score {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 20px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Förenkla uttrycket</h1>
+
+    <button id="reset-button">NY UPPGIFT (-3p)</button>
+
+    <div class="problem-box">
+      <div id="expression"></div>
+      <div id="feedback"></div>
+    </div>
+
+    <div class="input-wrap">
+      <input
+        type="text"
+        id="input-expression"
+        class="neutral"
+        placeholder="skriv här"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="button-grid">
+      <button class="numbutton" onclick="appendValue('7')">7</button>
+      <button class="numbutton" onclick="appendValue('8')">8</button>
+      <button class="numbutton" onclick="appendValue('9')">9</button>
+      <button class="delbutton" onclick="backspaceInput()">←</button>
+
+      <button class="numbutton" onclick="appendValue('4')">4</button>
+      <button class="numbutton" onclick="appendValue('5')">5</button>
+      <button class="numbutton" onclick="appendValue('6')">6</button>
+      <button class="symbutton2" onclick="appendValue('+')">+</button>
+
+      <button class="numbutton" onclick="appendValue('1')">1</button>
+      <button class="numbutton" onclick="appendValue('2')">2</button>
+      <button class="numbutton" onclick="appendValue('3')">3</button>
+      <button class="symbutton2" onclick="appendValue('-')">-</button>
+
+      <button class="symbutton" onclick="appendValue('x')">x</button>
+      <button class="numbutton" onclick="appendValue('0')">0</button>
+      <button class="symbutton" onclick="appendValue('y')">y</button>
+      <button class="symbutton3" onclick="appendValue('²')">²</button>
+    </div>
+  </div>
+
+  <div id="score">
+    Poäng: <span id="score-value">0</span>
+  </div>
+
+  <script>
+    const expressionEl = document.getElementById("expression");
+    const inputEl = document.getElementById("input-expression");
+    const feedbackEl = document.getElementById("feedback");
+    const resetButton = document.getElementById("reset-button");
+    const scoreValueEl = document.getElementById("score-value");
+
+    const successSounds = [
+      new Audio("assets/am1.mp3"),
+      new Audio("assets/am2.mp3"),
+      new Audio("assets/am3.mp3")
+    ];
+
+    let score = 0;
+    let currentDisplay = "";
+    let currentTerms = [];
+    let targetPoly = null;
+    let solvedThisRound = false;
+    let solveTimeout = null;
+    let lastState = "";
+
+    const MONOMIALS = [
+      { ex: 2, ey: 0, id: "x2", label: "x²" },
+      { ex: 1, ey: 1, id: "xy", label: "xy" },
+      { ex: 0, ey: 2, id: "y2", label: "y²" },
+      { ex: 1, ey: 0, id: "x",  label: "x" },
+      { ex: 0, ey: 1, id: "y",  label: "y" },
+      { ex: 0, ey: 0, id: "c",  label: "" }
+    ];
+
+    function key(expX, expY) {
+      return `${expX},${expY}`;
+    }
+
+    function cleanPoly(poly) {
+      const out = {};
+      for (const k in poly) {
+        if (Math.abs(poly[k]) > 1e-9) out[k] = Math.round(poly[k]);
+      }
+      return out;
+    }
+
+    function polyEquals(a, b) {
+      const aa = cleanPoly(a || {});
+      const bb = cleanPoly(b || {});
+      const keys = new Set([...Object.keys(aa), ...Object.keys(bb)]);
+      for (const k of keys) {
+        if ((aa[k] || 0) !== (bb[k] || 0)) return false;
+      }
+      return true;
+    }
+
+    function termString(coeff, expX, expY, first) {
+      const abs = Math.abs(coeff);
+      let variablePart = "";
+
+      if (expX === 2) variablePart += "x²";
+      else if (expX === 1) variablePart += "x";
+
+      if (expY === 2) variablePart += "y²";
+      else if (expY === 1) variablePart += "y";
+
+      let coeffPart = "";
+      if (variablePart === "") {
+        coeffPart = String(abs);
+      } else {
+        coeffPart = abs === 1 ? "" : String(abs);
+      }
+
+      const core = coeffPart + variablePart;
+
+      if (first) return coeff < 0 ? "-" + core : core;
+      return coeff < 0 ? " - " + core : " + " + core;
+    }
+
+    function formatPoly(poly) {
+      const order = [
+        [2, 0],
+        [1, 1],
+        [0, 2],
+        [1, 0],
+        [0, 1],
+        [0, 0]
+      ];
+
+      let result = "";
+      let first = true;
+
+      for (const [ex, ey] of order) {
+        const coeff = poly[key(ex, ey)] || 0;
+        if (coeff !== 0) {
+          result += termString(coeff, ex, ey, first);
+          first = false;
+        }
+      }
+
+      return result || "0";
+    }
+
+    function preprocessExpression(expr) {
+      let s = expr.replace(/\s+/g, "");
+      s = s.replace(/²/g, "^2");
+
+      s = s.replace(/(\d)([xy])/g, "$1*$2");
+      s = s.replace(/([xy])([xy])/g, "$1*$2");
+
+      return s;
+    }
+
+    function expressionToPoly(expr) {
+      try {
+        const prepared = preprocessExpression(expr);
+
+        const samples = [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+          [1, 1],
+          [2, 0],
+          [0, 2]
+        ];
+
+        const A = samples.map(([x, y]) => [x * x, x * y, y * y, x, y, 1]);
+        const b = samples.map(([x, y]) => {
+          const val = math.evaluate(prepared, { x, y });
+          if (!isFinite(val)) throw new Error("Bad value");
+          return val;
+        });
+
+        const solution = math.lusolve(A, b).map(v => v[0]);
+        const rounded = solution.map(v =>
+          Math.abs(v - Math.round(v)) < 1e-8 ? Math.round(v) : v
+        );
+
+        const extraTests = [
+          [2, 1],
+          [1, 2],
+          [-1, 1],
+          [3, -1]
+        ];
+
+        for (const [x, y] of extraTests) {
+          const actual = math.evaluate(prepared, { x, y });
+          const predicted =
+            rounded[0] * x * x +
+            rounded[1] * x * y +
+            rounded[2] * y * y +
+            rounded[3] * x +
+            rounded[4] * y +
+            rounded[5];
+
+          if (Math.abs(actual - predicted) > 1e-6) return null;
+        }
+
+        return cleanPoly({
+          [key(2, 0)]: rounded[0],
+          [key(1, 1)]: rounded[1],
+          [key(0, 2)]: rounded[2],
+          [key(1, 0)]: rounded[3],
+          [key(0, 1)]: rounded[4],
+          [key(0, 0)]: rounded[5]
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function parseSimpleTerms(expr) {
+      let s = expr.replace(/\s+/g, "");
+      s = s.replace(/\^2/g, "²");
+
+      if (!s) return null;
+      if (/[^0-9xy²+\-]/.test(s)) return null;
+      if (/[+\-]{2,}/.test(s.replace(/^\-/, ""))) return null;
+
+      const rawTerms = s.match(/[+\-]?[^+\-]+/g);
+      if (!rawTerms) return null;
+
+      const out = [];
+      for (const raw of rawTerms) {
+        let sign = 1;
+        let t = raw;
+
+        if (t[0] === "+") t = t.slice(1);
+        else if (t[0] === "-") {
+          sign = -1;
+          t = t.slice(1);
+        }
+
+        if (!t) return null;
+
+        const m = t.match(/^(\d*)(x²|x)?(y²|y)?$/);
+        if (!m) return null;
+
+        const coeffDigits = m[1];
+        const xPart = m[2] || "";
+        const yPart = m[3] || "";
+
+        const ex = xPart === "x²" ? 2 : xPart === "x" ? 1 : 0;
+        const ey = yPart === "y²" ? 2 : yPart === "y" ? 1 : 0;
+
+        if (xPart === "" && yPart === "" && coeffDigits === "") return null;
+
+        let coeff = 0;
+        if (xPart === "" && yPart === "") {
+          coeff = Number(coeffDigits);
+        } else {
+          coeff = coeffDigits === "" ? 1 : Number(coeffDigits);
+        }
+
+        if (!Number.isFinite(coeff)) return null;
+
+        out.push({
+          coeff: sign * coeff,
+          ex,
+          ey,
+          category: key(ex, ey)
+        });
+      }
+
+      return out;
+    }
+
+    function isFullySimplifiedInput(expr, targetPoly) {
+      const parsedTerms = parseSimpleTerms(expr);
+      if (!parsedTerms) return false;
+
+      const seen = new Set();
+
+      for (const term of parsedTerms) {
+        if (term.coeff === 0) return false;
+        if (seen.has(term.category)) return false;
+        seen.add(term.category);
+      }
+
+      const usedKeys = new Set(Object.keys(cleanPoly(targetPoly)));
+      if (seen.size !== usedKeys.size) return false;
+
+      for (const k of usedKeys) {
+        if (!seen.has(k)) return false;
+      }
+
+      return true;
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function nonZeroInt(min, max) {
+      let n = 0;
+      while (n === 0) n = randomInt(min, max);
+      return n;
+    }
+
+    function biasedCoeff() {
+      const sign = Math.random() < 0.35 ? -1 : 1;
+      return sign * randomInt(1, 9);
+    }
+
+    function splitCoefficient(total, pieces) {
+      if (pieces === 1) return [total];
+
+      for (let attempt = 0; attempt < 300; attempt++) {
+        const parts = [];
+        let sum = 0;
+
+        for (let i = 0; i < pieces - 1; i++) {
+          parts.push(nonZeroInt(-9, 9));
+          sum += parts[i];
+        }
+
+        const last = total - sum;
+        if (last === 0) continue;
+        if (Math.abs(last) > 12) continue;
+
+        parts.push(last);
+
+        if (parts.some(v => v === 0)) continue;
+
+        const sameAsSimple = parts.length === 1 || (parts.length === 2 && (parts[0] === total || parts[1] === total));
+        if (sameAsSimple) continue;
+
+        return parts;
+      }
+
+      return [total - 1, 1];
+    }
+
+    function coeffToTermText(coeff, ex, ey, first) {
+      const abs = Math.abs(coeff);
+      let variablePart = "";
+
+      if (ex === 2) variablePart += "x²";
+      else if (ex === 1) variablePart += "x";
+
+      if (ey === 2) variablePart += "y²";
+      else if (ey === 1) variablePart += "y";
+
+      let coeffPart = "";
+      if (variablePart === "") {
+        coeffPart = String(abs);
+      } else {
+        coeffPart = abs === 1 ? "" : String(abs);
+      }
+
+      const core = coeffPart + variablePart;
+
+      if (first) return coeff < 0 ? "-" + core : core;
+      return coeff < 0 ? core.startsWith("-") ? core : "-" + core : "+" + core;
+    }
+
+    function monomialClass(ex, ey) {
+      if (ex === 2 && ey === 0) return "chip-x2";
+      if (ex === 1 && ey === 1) return "chip-xy";
+      if (ex === 0 && ey === 2) return "chip-y2";
+      if (ex === 1 && ey === 0) return "chip-x";
+      if (ex === 0 && ey === 1) return "chip-y";
+      return "chip-c";
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildDisplayHTML(terms, showHelpers) {
+      if (!showHelpers) {
+        return `<div class="expr-plain">${terms.map(t => t.text).join("")}</div>`;
+      }
+
+      return terms.map(t => {
+        return `<span class="term-chip ${monomialClass(t.ex, t.ey)}">${t.text}</span>`;
+      }).join("");
+    }
+
+    function generateProblem() {
+	  while (true) {
+		const targetPoly = {};
+		const categories = shuffle(MONOMIALS).slice(0, randomInt(3, 5));
+
+		for (const m of categories) {
+		  targetPoly[key(m.ex, m.ey)] = biasedCoeff();
+		}
+
+		const terms = [];
+		let forcedSplitDone = false;
+
+		for (const m of categories) {
+		  const total = targetPoly[key(m.ex, m.ey)];
+		  let pieces = 1;
+
+		  if (!forcedSplitDone) {
+			pieces = randomInt(2, 3);
+			forcedSplitDone = true;
+		  } else if (Math.random() < 0.6) {
+			pieces = randomInt(2, 3);
+		  }
+
+		  const split = splitCoefficient(total, pieces);
+
+		  split.forEach(v => {
+			terms.push({
+			  coeff: v,
+			  ex: m.ex,
+			  ey: m.ey
+			});
+		  });
+		}
+
+		if (terms.length < 4 || terms.length > 10) continue;
+
+		const shuffled = shuffle(terms);
+
+		const termsWithText = shuffled.map((t, i) => ({
+		  ...t,
+		  text: coeffToTermText(t.coeff, t.ex, t.ey, i === 0)
+		}));
+
+		return {
+		  displayTerms: termsWithText,
+		  finalPoly: cleanPoly(targetPoly)
+		};
+	  }
+	}
+
+    function triggerConfetti() {
+      confetti({
+        particleCount: 180,
+        spread: 90,
+        colors: ["#FF0000", "#00FF00", "#0000FF"]
+      });
+    }
+
+    function playSuccessSound() {
+      const sound = successSounds[Math.floor(Math.random() * successSounds.length)];
+      sound.currentTime = 0;
+      sound.play();
+    }
+
+    function setInputState(state) {
+      inputEl.classList.remove("neutral", "bad", "partial", "good");
+      inputEl.classList.add(state);
+    }
+
+    function clearSolveTimeout() {
+      if (solveTimeout) {
+        clearTimeout(solveTimeout);
+        solveTimeout = null;
+      }
+    }
+
+    function renderExpression() {
+      const showHelpers = score < 10;
+      expressionEl.innerHTML = buildDisplayHTML(currentTerms, showHelpers);
+    }
+
+    function newProblem() {
+      clearSolveTimeout();
+      solvedThisRound = false;
+      lastState = "";
+
+      const p = generateProblem();
+      currentTerms = p.displayTerms;
+      targetPoly = p.finalPoly;
+      currentDisplay = currentTerms.map(t => t.text).join("");
+
+      renderExpression();
+
+      inputEl.value = "";
+      setInputState("neutral");
+      inputEl.focus();
+    }
+
+    function completeRound() {
+      if (solvedThisRound) return;
+      solvedThisRound = true;
+
+      score++;
+      scoreValueEl.textContent = score;
+
+      if (score % 10 === 0) {
+        triggerConfetti();
+      }
+
+      setTimeout(() => {
+        newProblem();
+      }, 850);
+    }
+
+    function checkInputLive() {
+      if (solvedThisRound) return;
+
+      clearSolveTimeout();
+
+      const answer = inputEl.value.trim();
+
+      if (!answer) {
+        setInputState("neutral");
+        lastState = "neutral";
+        return;
+      }
+
+      const userPoly = expressionToPoly(answer);
+
+      if (!userPoly) {
+        setInputState("bad");
+        lastState = "bad";
+        return;
+      }
+
+      if (!polyEquals(userPoly, targetPoly)) {
+        setInputState("bad");
+        lastState = "bad";
+        return;
+      }
+
+      if (isFullySimplifiedInput(answer, targetPoly)) {
+        setInputState("good");
+
+        if (lastState !== "good") {
+          playSuccessSound();
+        }
+
+        lastState = "good";
+
+        solveTimeout = setTimeout(() => {
+          completeRound();
+        }, 700);
+      } else {
+        setInputState("partial");
+        lastState = "partial";
+      }
+    }
+
+    function appendValue(value) {
+  if (solvedThisRound) return;
+
+  const start = inputEl.selectionStart ?? inputEl.value.length;
+  const end = inputEl.selectionEnd ?? inputEl.value.length;
+  const current = inputEl.value;
+
+  inputEl.value = current.slice(0, start) + value + current.slice(end);
+
+  const newPos = start + value.length;
+  inputEl.focus();
+  inputEl.setSelectionRange(newPos, newPos);
+
+  checkInputLive();
+}
+
+function backspaceInput() {
+  if (solvedThisRound) return;
+
+  const start = inputEl.selectionStart ?? inputEl.value.length;
+  const end = inputEl.selectionEnd ?? inputEl.value.length;
+  const current = inputEl.value;
+
+  if (start !== end) {
+    inputEl.value = current.slice(0, start) + current.slice(end);
+    inputEl.focus();
+    inputEl.setSelectionRange(start, start);
+  } else if (start > 0) {
+    inputEl.value = current.slice(0, start - 1) + current.slice(end);
+    inputEl.focus();
+    inputEl.setSelectionRange(start - 1, start - 1);
+  }
+
+  checkInputLive();
+}
+
+    resetButton.addEventListener("click", () => {
+      score = Math.max(0, score - 3);
+      scoreValueEl.textContent = score;
+      newProblem();
+    });
+
+    inputEl.addEventListener("input", checkInputLive);
+
+    newProblem();
+  </script>
+</body>
+</html>

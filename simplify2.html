@@ -675,7 +675,11 @@
     function generateProblem() {
 		  while (true) {
 			const targetPoly = {};
-			const categories = shuffle(MONOMIALS).slice(0, randomInt(2, 4));
+			const constantMono = MONOMIALS.find(m => m.ex === 0 && m.ey === 0);
+			const otherMonomials = MONOMIALS.filter(m => !(m.ex === 0 && m.ey === 0));
+
+			const extraCount = randomInt(1, 3);   // together with constant => 2 to 4 categories total
+			const categories = [constantMono, ...shuffle(otherMonomials).slice(0, extraCount)];
 
 			for (const m of categories) {
 			  targetPoly[key(m.ex, m.ey)] = biasedCoeff();

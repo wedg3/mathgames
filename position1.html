@@ -8,42 +8,48 @@
   :root{
     color-scheme: dark;
 
-    /* Your palette */
-    --grad1: #feac5e;
-    --grad2: #c779d0;
-    --grad3: #4bc0c8;
+    /* Theme closer to style 2 */
+    --bg: #000000;
+    --panel: #000000;
+    --panel-2: rgba(255,255,255,0.04);
 
-    --bg: linear-gradient(135deg, var(--grad1), var(--grad2) 45%, var(--grad3) 100%);
-    --front-bg: linear-gradient(145deg, #5e548e 0%, #231942 70%, #0e0a1f 100%);
-    --back-bg: linear-gradient(145deg, #0a3a4a 0%, #0a2232 70%, #02141a 100%);
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.70);
 
-    --text: #fffaf7;
-    --muted: #e6e6e6cc;
-    --border: #ffffff;
+    --green: lightgreen;
+    --green-hover: #04AA6D;
+    --pink: pink;
+    --pink-strong: red;
+    --blue: lightblue;
+    --yellow: yellow;
 
-    /* Extra helpers (derived) */
-    --panel-border: rgba(255,255,255,.20);
-    --panel-border-strong: rgba(255,255,255,.35);
-    --shadow: 0 12px 34px rgba(0,0,0,.45);
+    --border: rgba(255,255,255,0.9);
+    --border-soft: rgba(255,255,255,0.25);
+
+    --shadow: none;
   }
 
   body{
-    margin:0; padding:24px;
+    margin:0;
+    padding:24px;
     background: var(--bg);
     color: var(--text);
-    font-family: "Courier New", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     min-height: 100vh;
   }
 
-  .wrap{ max-width: 840px; margin: 0 auto; }
+  .wrap{
+    max-width: 840px;
+    margin: 0 auto;
+  }
 
   .card{
     position: relative;
-    background: var(--back-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 4px;
-    padding:18px;
-    box-shadow: var(--shadow);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 18px;
+    box-shadow: none;
     overflow: hidden;
   }
 
@@ -52,8 +58,8 @@
     position:absolute;
     inset:0;
     pointer-events:none;
-    border-radius: 4px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    border-radius: 0;
+    box-shadow: none;
   }
 
   /* Penalty flash */
@@ -63,21 +69,22 @@
     top:58%;
     transform: translate(-50%, -50%);
     padding: 10px 14px;
-    border-radius: 6px;
-    
-    background: rgba(0,0,0,.45);
-    color: red;
-    font-family: Consolas, "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    border-radius: 0;
+    background: transparent;
+    color: var(--pink-strong);
+    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 92px;
     letter-spacing: 1px;
     opacity: 0;
     pointer-events: none;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+    filter: none;
     z-index: 5;
   }
+
   #penaltyFlash.show{
     animation: penaltyPop 520ms ease-out;
   }
+
   @keyframes penaltyPop{
     0%   { opacity: 0; transform: translate(-50%,-35%) scale(.96); }
     40%  { opacity: 1; transform: translate(-50%,-55%) scale(1.10); }
@@ -92,44 +99,39 @@
 
   .expr{
     flex: 1;
-    font-family:  PT Mono, "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 34px;
-
-    background: rgba(0,0,0,.20);
-    border: 1px solid rgba(255,255,255,.32);
-    border-radius: 4px;
-
+    font-weight: bold;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
     padding: 8px 14px;
     margin-bottom: 14px;
     text-align: center;
-
-    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+    box-shadow: none;
   }
 
   .scoreBox{
     margin-bottom: 14px;
-    font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 24px;
-    font-weight:800;
+    font-weight: 800;
     color: var(--text);
-    
-    border-radius: 4px;
-
+    border-radius: 0;
     padding: 10px 12px;
     white-space: nowrap;
-    
-   
   }
 
   .numRow{
     margin: 18px 0 10px;
-    display:flex; justify-content:center;
+    display:flex;
+    justify-content:center;
   }
 
   .num{
     position: relative;
     display: inline-block;
-    font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 44px;
     letter-spacing: 1px;
     user-select: none;
@@ -149,18 +151,19 @@
     width: 0.62em;
     text-align:center;
   }
-  .ghost{ opacity: .025; }
+
+  .ghost{ opacity: .08; }
   .active{ opacity: 1; }
 
   .movingDot{
     position: absolute;
     top: 50%;
     transform: translate(-50%, -40%);
-    opacity: .95;
+    opacity: 1;
     pointer-events: none;
     transition: left 90ms linear;
-    color: var(--text);
-    text-shadow: 0 2px 10px rgba(0,0,0,.5);
+    color: var(--yellow);
+    text-shadow: none;
   }
 
   .sliderWrap{
@@ -174,31 +177,34 @@
   input[type="range"]{
     width: min(450px, 100%);
     direction: rtl;
-    accent-color: rgba(255,255,255,.85);
+    accent-color: var(--green);
   }
 
   .controls{
-    display:flex; justify-content:center;
+    display:flex;
+    justify-content:center;
     margin-top: 14px;
-	
   }
 
   button{
-    background: rgba(0,0,0,.20);
-    color: var(--text);
-    border: 1px solid rgba(255,255,255,.22);
-    border-radius: 4px;
+    background: var(--green);
+    color: black;
+    border: 2px solid white;
+    border-radius: 0;
     padding: 10px 14px;
     font-size: 14px;
-    cursor:pointer;
-    box-shadow: 0 8px 18px rgba(0,0,0,.25);
-	font-family: "Courier New", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    cursor: pointer;
+    box-shadow: none;
+    font-family: Consolas, Monaco, "Courier New", monospace;
+    letter-spacing: 1px;
   }
-  
+
   button:hover{
-    border-color: rgba(255,255,255,.40);
-    background: rgba(0,0,0,.28);
+    border-color: black;
+    background: var(--green-hover);
+    color: white;
   }
+
   button:active{
     transform: translateY(1px);
   }
@@ -219,6 +225,7 @@
     text-align:center;
     line-height: 1.35;
     color: var(--muted);
+    font-family: Consolas, Monaco, "Courier New", monospace;
   }
 
   canvas#confetti{
@@ -231,7 +238,10 @@
     transition: opacity 120ms linear;
     z-index: 2;
   }
-  canvas#confetti.on{ opacity: 1; }
+
+  canvas#confetti.on{
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
